@@ -23,10 +23,10 @@ static int16_t interpolation(int16_t input)
     if (input >= pts[2].x) return pts[2].y;
     if (input <= pts[1].x) {
         return pts[0].y +
-            (pts[1].y - pts[0].y) * (input - pts[0].x) / (pts[1].x - pts[0].x)+1;
+            (pts[1].y - pts[0].y) * (input - pts[0].x) / (pts[1].x - pts[0].x);
     } else {
 
         return pts[1].y +
-            (pts[2].y - pts[1].y) * (input - pts[1].x) / (pts[2].x - pts[1].x)+1;
+            (pts[2].y - pts[1].y) * (input - pts[1].x) / (pts[2].x - pts[1].x);
     }
 }

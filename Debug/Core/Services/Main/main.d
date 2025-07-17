@@ -27,6 +27,8 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
@@ -41,7 +43,13 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
  ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM0/portmacro.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
  ../Core/Applications/VoltInterpolation.c \
- ../Core/Applications/MovingAverageFilter.c ../Core/RTE/Rte.h
+ ../Core/Applications/MAFilterButton.c \
+ ../Core/Applications/MAFilterVolt.c ../Core/RTE/Rte.h \
+ ../Core/Services/Display/lcd_st7565.h \
+ ../Core/Services/Display/lcd_st7565_pinconf.h \
+ ../Core/Services/Main/main.h ../Core/Services/Display/font.h \
+ ../Core/Services/Display/lcd_st7565_pinconf.h \
+ ../Core/Services/Display/font.h
 ../Core/Services/Main/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h:
 ../Core/MCAL/stm32f0xx_hal_conf.h:
@@ -70,6 +78,8 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_i2c_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
@@ -84,5 +94,12 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
 ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM0/portmacro.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
 ../Core/Applications/VoltInterpolation.c:
-../Core/Applications/MovingAverageFilter.c:
+../Core/Applications/MAFilterButton.c:
+../Core/Applications/MAFilterVolt.c:
 ../Core/RTE/Rte.h:
+../Core/Services/Display/lcd_st7565.h:
+../Core/Services/Display/lcd_st7565_pinconf.h:
+../Core/Services/Main/main.h:
+../Core/Services/Display/font.h:
+../Core/Services/Display/lcd_st7565_pinconf.h:
+../Core/Services/Display/font.h:

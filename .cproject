@@ -68,6 +68,7 @@
 									<listOptionValue builtIn="false" value="../Core/Services/Main"/>
 									<listOptionValue builtIn="false" value="../Core/Services/OS"/>
 									<listOptionValue builtIn="false" value="../Core/Services"/>
+									<listOptionValue builtIn="false" value="../Core/Services/Display"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.689227737" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -197,14 +198,6 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1655317675;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1655317675.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.736742077;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.689227737">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1555719429;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1555719429.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.2009906391;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1306276038">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-	</storageModule>
 	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="scannerConfiguration"/>
 </cproject>
