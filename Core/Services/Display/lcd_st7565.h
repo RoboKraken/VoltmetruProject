@@ -48,7 +48,7 @@
 
 #define ST7565_TRUE                     1
 #define ST7565_FALSE                    0
-#define ST7565_ASINCRON_TRANSMIT        ST7565_TRUE
+#define ST7565_ASINCRON_TRANSMIT        ST7565_FALSE
 typedef enum
 {
     Page0 = 0,

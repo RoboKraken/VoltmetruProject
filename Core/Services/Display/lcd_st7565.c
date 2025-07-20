@@ -101,7 +101,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+                //HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint16_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -117,7 +117,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+                //HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint8_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -133,7 +133,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+                //HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint8_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -149,7 +149,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+                //HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint8_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -165,7 +165,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+               // HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint8_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -181,7 +181,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+                //HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint8_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -197,7 +197,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+                //HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint8_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -213,7 +213,7 @@ void st7565_write_buffer(uint8_t *buffer)
                 CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
                 CMD(ST7565_CMD_RMW);
                 HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 1 );
-                HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
+                //HAL_SPI_Transmit(&hspi1, (uint8_t *)0xff, 1, 100);
                 for(uint8_t i = 0; i< 128; i++)    //update page
                 {
                     DataToSend[i]=Data[(128 * page) + i];
@@ -234,7 +234,7 @@ void st7565_write_buffer(uint8_t *buffer)
 		CMD(ST7565_CMD_SET_COLUMN_LOWER | (0x0 & 0xf));
 		CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
 		CMD(ST7565_CMD_RMW);
-		DATA(0xff);
+		//DATA(0xff);
 		for (c = 0; c < 128; c++) {
 			DATA(buffer[(128 * p) + c]);
 		}

@@ -58,13 +58,13 @@ osThreadId_t readAdcVoltHandle;
 const osThreadAttr_t readAdcVolt_attributes = {
   .name = "readAdcVolt",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for displayVoltRead */
 osThreadId_t displayVoltReadHandle;
 const osThreadAttr_t displayVoltRead_attributes = {
   .name = "displayVoltRead",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for readButton */
@@ -72,8 +72,9 @@ osThreadId_t readButtonHandle;
 const osThreadAttr_t readButton_attributes = {
   .name = "readButton",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -94,7 +95,8 @@ void readButtonFunction(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint8_t flag=0;
+uint8_t buttonTaskCreated = 0;
 /* USER CODE END 0 */
 
 /**
@@ -137,6 +139,7 @@ int main(void)
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
+
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
@@ -161,6 +164,12 @@ int main(void)
 
   /* creation of readButton */
   readButtonHandle = osThreadNew(readButtonFunction, NULL, &readButton_attributes);
+  
+  if (readButtonHandle != NULL) {
+      buttonTaskCreated = 1;
+  } else {
+      buttonTaskCreated = 0;
+  }
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -277,7 +286,7 @@ static void MX_ADC_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-  sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;;
+  sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -459,7 +468,7 @@ void readAdcVoltFunction(void *argument)
 	      HAL_ADC_Stop(&hadc);
 
 	      voltRead = filterVolt(interpolation(voltReadRaw));
-    osDelay(10);
+    osDelay(5);
   }
   /* USER CODE END 5 */
 }
@@ -475,78 +484,92 @@ void displayVoltReadFunction(void *argument)
 {
   /* USER CODE BEGIN displayVoltReadFunction */
   /* Infinite loop */
-  st7565_init();
+				st7565_init();
   			  st7565_backlight_enable();
   			  st7565_clear_screen();
+  			st7565_set_brightness(0);
   			  //st7565_fade_out(64);
+  			//st7565_write_buffer(buffer); // This will show the pre-filled logo
+  			//osDelay(1000);
+
+  			//st7565_fade_in(10);
+
+
   			  st7565_clear_buffer(buffer);
 
-  			  //Animatie jmekera de startup
-  			  /*
-  			  uint8_t spacing=5; //Cat de distantate sunt liniile in animatie
-  			  for(uint16_t i=0;i<=63;i++){//i,j stanga sus->centru
-  				  spacing=5+i/10;
+  			    			  //Animatie jmekera de startup
+
+  			  uint8_t spacingx=126/10; //Cat de distantate sunt liniile in animatie x
+  			  uint8_t spacingy=63/6;
+  			  for(uint16_t i=0;i<=63;i+=2){//i,j stanga sus->centru
+  				  //spacing=5+i/10;
+  				  if(i%4==0)st7565_set_brightness(i/4);
   				  uint16_t j=i/2;
   				  st7565_clear_buffer(buffer);
   				  //Linie de la i,j la marginea dreapta
-  				  for(uint16_t j2=0;j2<=63;j2+=spacing){
+  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
   					st7565_drawline(buffer,i,j,126,j2,1);
   				  }
   				//Linie de la i,j la marginea stanga
-  				  				  for(uint16_t j2=0;j2<=63;j2+=spacing){
+  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
   				  					st7565_drawline(buffer,i,j,0,j2,1);
   				  				  }
 
   				  //Linie de la i,j la margine jos
-  				  for(uint16_t i2=0;i2<=126;i2+=spacing){
+  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
   				  		st7565_drawline(buffer,i,j,i2,63,1);
-  				  }
+  				  				  }
   				//Linie de la i,j la margine sus
-  				  				  for(uint16_t i2=0;i2<=126;i2+=spacing){
+  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
   				  				  		st7565_drawline(buffer,i,j,i2,0,1);
   				  				  }
 
   				//deseneaza frame
   				st7565_write_buffer(buffer);
+				//HAL_Delay(50);
 
-  				osDelay(5);
+  				//osDelay(2);
 
   			  }
-  			for(uint16_t i=64;i<=126;i++){//i,j centru->dreapta jos
-  				spacing=11-(i-64)/10;
+  			for(uint16_t i=64;i<=126;i+=2){//i,j centru->dreapta jos
+  				//spacing=11-(i-64)/10;
+  				if(i%4==0)st7565_set_brightness((126-i)/4);
   			  				  uint16_t j=i/2;
   			  				  st7565_clear_buffer(buffer);
   			  				//Linie de la i,j la marginea dreapta
-  			  				  				  for(uint16_t j2=0;j2<=63;j2+=spacing){
+  			  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
   			  				  					st7565_drawline(buffer,i,j,126,j2,1);
   			  				  				  }
   			  				  				//Linie de la i,j la marginea stanga
-  			  				  				  				  for(uint16_t j2=0;j2<=63;j2+=spacing){
+  			  				  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
   			  				  				  					st7565_drawline(buffer,i,j,0,j2,1);
   			  				  				  				  }
 
   			  				  				  //Linie de la i,j la margine jos
-  			  				  				  for(uint16_t i2=0;i2<=126;i2+=spacing){
+  			  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
   			  				  				  		st7565_drawline(buffer,i,j,i2,63,1);
   			  				  				  }
   			  				  				//Linie de la i,j la margine sus
-  			  				  				  				  for(uint16_t i2=0;i2<=126;i2+=spacing){
+  			  				  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
   			  				  				  				  		st7565_drawline(buffer,i,j,i2,0,1);
   			  				  				  				  }
 
   			  				//deseneaza frame
   			  				st7565_write_buffer(buffer);
+			  				//HAL_Delay(50);
 
-  			  				osDelay(5);
+  			  				//osDelay(2);
 
   			  			  }
+  			//st7565_fade_in(64);
   			  //st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c);
   			  //st7565_drawstring(buffer,15,2,"Hello World!!");
 
-				*/
+
   			  //HAL_ReadPin
   			  //Trimitem comanda sa desenam
 
+  			st7565_set_brightness(0);
   for(;;)
   {
 	  //st7565_fillrect(buffer,10,10,10,10,1);
@@ -627,7 +650,7 @@ void displayVoltReadFunction(void *argument)
       st7565_drawstring(buffer, 108, 5, "3.3");
       st7565_write_buffer(buffer);
   }
-    osDelay(1);
+    osDelay(10);
   }
   /* USER CODE END displayVoltReadFunction */
 }
@@ -643,31 +666,36 @@ void readButtonFunction(void *argument)
 {
   /* USER CODE BEGIN readButtonFunction */
   /* Infinite loop */
-
+	flag=1;
   for(;;)
   {
-	  hadc.Instance->CHSELR = 1<<ADC_CHANNEL_0;
-	  	      HAL_ADC_Start(&hadc);
+    hadc.Instance->CHSELR = 1<<ADC_CHANNEL_0;
+    if (HAL_ADC_Start(&hadc) == HAL_OK) {
+      if (HAL_ADC_PollForConversion(&hadc, 4) == HAL_OK) {
+        buttonReadRaw = HAL_ADC_GetValue(&hadc);
+      } else {
+        buttonReadRaw = 666;
+      }
+    } else {
+      buttonReadRaw = 666;
+    }
+    buttonRead[0]=buttonRead[1];
+    buttonRead[1]=filterButton(interpolation(buttonReadRaw));
+    if(buttonRead[1]<=50&&buttonRead[0]>50){
+      if(displayMode==0)displayMode=displayModeMax;
+      else displayMode--;
+    }
+    else if(buttonRead[1]>300&&buttonRead[1]<315&&(buttonRead[0]>=315||buttonRead[0]<=300)){
+      if(displayMode==displayModeMax)displayMode=0;
+      else displayMode++;
+    }
+    else if(buttonRead[1]>186&&buttonRead[1]<206&&(buttonRead[0]>=206||buttonRead[0]<=186)){
 
-	  	      if(HAL_ADC_PollForConversion(&hadc, 4)==HAL_OK){
-	  	      buttonReadRaw = HAL_ADC_GetValue(&hadc);
-	  	      }
-	  	      else buttonReadRaw=0;
-	  	      buttonRead[0]=buttonRead[1];
-	  	      buttonRead[1]=filterButton(interpolation(buttonReadRaw));
+    }
+    else if(buttonRead[1]>87&&buttonRead[1]<107&&(buttonRead[0]>=107||buttonRead[0]<=87)){
 
-	  	      if(buttonRead[1]<=50&&buttonRead[0]>50){
-	  	    	  if(displayMode==0)displayMode=displayModeMax;
-	  	    	  else displayMode--;
-	  	      }
-	  	      else if(buttonRead[1]>300&&buttonRead[1]<315&&(buttonRead[0]>=315||buttonRead[0]<=300)){
-	  	    	  if(displayMode==displayModeMax)displayMode=0;
-	  	    	  else displayMode++;
-
-	  	      }
-
-
-    osDelay(10);
+    }
+    osDelay(5);
   }
   /* USER CODE END readButtonFunction */
 }

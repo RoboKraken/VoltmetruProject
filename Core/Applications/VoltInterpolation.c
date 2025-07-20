@@ -19,7 +19,7 @@ static int16_t interpolation(int16_t input)
         {4000, 330}
     };
 
-    //if (input <= pts[0].x) return pts[0].y;
+    if (input <= pts[0].x) return pts[0].y*input/pts[0].x;
     if (input >= pts[2].x) return pts[2].y;
     if (input <= pts[1].x) {
         return pts[0].y +

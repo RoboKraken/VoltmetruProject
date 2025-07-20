@@ -1,4 +1,4 @@
-../Core/Services/Display/lcd_st7565.c:84:6:st7565_write_buffer	19
+../Core/Services/Display/lcd_st7565.c:229:6:st7565_write_buffer	3
 ../Core/Services/Display/lcd_st7565.c:247:6:st7565_sendbyte	1
 ../Core/Services/Display/lcd_st7565.c:253:6:st7565_init	1
 ../Core/Services/Display/lcd_st7565.c:303:6:st7565_backlight_enable	1

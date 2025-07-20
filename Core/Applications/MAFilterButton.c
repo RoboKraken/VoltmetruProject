@@ -16,6 +16,8 @@ static uint16_t filterButton(uint16_t voltIn){
 	}
 	MAVectorButton[9]=voltIn;
 	media/=10;
+
+	//if(media>)
 	return media;
 }
 
