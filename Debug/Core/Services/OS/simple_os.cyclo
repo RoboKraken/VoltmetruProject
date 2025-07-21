@@ -1,0 +1,2 @@
+../Core/Services/OS/simple_os.c:7:6:OS_Init	1
+../Core/Services/OS/simple_os.c:12:6:OS_Run	4

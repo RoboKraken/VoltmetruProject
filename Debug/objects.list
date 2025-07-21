@@ -13,6 +13,7 @@
 "./Core/Services/Display/lcd_st7565.o"
 "./Core/Services/Main/main.o"
 "./Core/Services/OS/freertos.o"
+"./Core/Services/OS/simple_os.o"
 "./Core/Services/syscalls.o"
 "./Core/Services/sysmem.o"
 "./Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o"

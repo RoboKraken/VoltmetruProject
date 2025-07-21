@@ -5,13 +5,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Core/Services/OS/freertos.c 
+../Core/Services/OS/freertos.c \
+../Core/Services/OS/simple_os.c 
 
 OBJS += \
-./Core/Services/OS/freertos.o 
+./Core/Services/OS/freertos.o \
+./Core/Services/OS/simple_os.o 
 
 C_DEPS += \
-./Core/Services/OS/freertos.d 
+./Core/Services/OS/freertos.d \
+./Core/Services/OS/simple_os.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,7 +24,7 @@ Core/Services/OS/%.o Core/Services/OS/%.su Core/Services/OS/%.cyclo: ../Core/Ser
 clean: clean-Core-2f-Services-2f-OS
 
 clean-Core-2f-Services-2f-OS:
-	-$(RM) ./Core/Services/OS/freertos.cyclo ./Core/Services/OS/freertos.d ./Core/Services/OS/freertos.o ./Core/Services/OS/freertos.su
+	-$(RM) ./Core/Services/OS/freertos.cyclo ./Core/Services/OS/freertos.d ./Core/Services/OS/freertos.o ./Core/Services/OS/freertos.su ./Core/Services/OS/simple_os.cyclo ./Core/Services/OS/simple_os.d ./Core/Services/OS/simple_os.o ./Core/Services/OS/simple_os.su
 
 .PHONY: clean-Core-2f-Services-2f-OS
 
