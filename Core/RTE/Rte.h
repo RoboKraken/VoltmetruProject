@@ -17,6 +17,7 @@ extern uint8_t displayModeMax;
 extern volatile uint16_t adc_buffer[2];
 
 extern uint8_t fontMode;
+extern uint8_t fontModeMax;
 
 extern uint8_t buttonState;
 extern uint8_t buttonStatePrev;
@@ -26,4 +27,6 @@ extern uint8_t buttonTransitionFlag;
 extern uint32_t displayModeChangeTime;
 extern uint8_t showDisplayModeOverlay;
 
+extern uint32_t os_task_overrun_count[8];
+extern uint32_t os_task_overrun_time;
 #endif /* RTE_RTE_H_ */

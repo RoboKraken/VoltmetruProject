@@ -1,2 +1,2 @@
-../Core/Services/OS/simple_os.c:7:6:OS_Init	16	static
-../Core/Services/OS/simple_os.c:12:6:OS_Run	32	static
+../Core/Services/OS/simple_os.c:10:6:OS_Init	24	static
+../Core/Services/OS/simple_os.c:17:6:OS_Run	40	static

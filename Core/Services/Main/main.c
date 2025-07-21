@@ -88,12 +88,14 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC_Init(void);
 static void MX_SPI1_Init(void);
-void readAdcVoltFunction(void *argument);
-void displayVoltReadFunction(void *argument);
-void readButtonFunction(void *argument);
+
 
 /* USER CODE BEGIN PFP */
-
+void readAdcVoltFunction(void);
+void displayVoltReadFunction(void);
+void readButtonFunction(void);
+void init_task(void);
+void test_task(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -139,22 +141,15 @@ int main(void)
 
   /* USER CODE END 2 */
 
-  void test_task(void) {
-
-    test++;
-  }
-
-
-  //Definire nume, functie si timp de executie(ms) taskuri
+  uint8_t nrTasks=3; //Numar taskuri
   SimpleTask tasks[] = {
-    {"test", test_task, 1000}
-  };
+    {"readAdcVoltFunction", readAdcVoltFunction, 1},
+	{"displayVoltReadFunction", displayVoltReadFunction, 29},
+    {"readButtonFunction",readButtonFunction,1}
+  };//timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor ms a tuturor taskurilor.
 
-
-  OS_Init(tasks, 1);
-
-
-
+  uint32_t initTaskMaxTime=2750; //timp alocat task-ului de init OS(dupa initializarea OS-ului in sine). In ms.
+  OS_Init(tasks, nrTasks, init_task,initTaskMaxTime);
   OS_Run();
 
   /* We should never get here as control is now taken by the scheduler */
@@ -415,7 +410,96 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+// Facem OS custom aici, avem un init task dupa care vin celalalte.
+void init_task(void) {
+    test = 42;
+    st7565_init();
+      			  st7565_backlight_enable();
+      			  st7565_clear_screen();
+      			st7565_set_brightness(0);
+      			  //st7565_fade_out(64);
+      			//st7565_write_buffer(buffer); // This will show the pre-filled logo
+      			//osDelay(1000);
 
+      			//st7565_fade_in(10);
+
+
+      			  st7565_clear_buffer(buffer);
+
+      			    			  //Animatie jmekera de startup
+
+      			  uint8_t spacingx=126/10; //Cat de distantate sunt liniile in animatie x
+      			  uint8_t spacingy=63/6;
+      			  for(uint16_t i=0;i<=63;i+=2){//i,j stanga sus->centru
+      				  //spacing=5+i/10;
+      				  if(i%4==0)st7565_set_brightness(i/4);
+      				  uint16_t j=i/2;
+      				  st7565_clear_buffer(buffer);
+      				  //Linie de la i,j la marginea dreapta
+      				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
+      					st7565_drawline(buffer,i,j,126,j2,1);
+      				  }
+      				//Linie de la i,j la marginea stanga
+      				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
+      				  					st7565_drawline(buffer,i,j,0,j2,1);
+      				  				  }
+
+      				  //Linie de la i,j la margine jos
+      				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
+      				  		st7565_drawline(buffer,i,j,i2,63,1);
+      				  				  }
+      				//Linie de la i,j la margine sus
+      				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
+      				  				  		st7565_drawline(buffer,i,j,i2,0,1);
+      				  				  }
+
+      				//deseneaza frame
+      				st7565_write_buffer(buffer);
+    				//HAL_Delay(50);
+
+      				//osDelay(2);
+
+      			  }
+      			for(uint16_t i=64;i<=126;i+=2){//i,j centru->dreapta jos
+      				//spacing=11-(i-64)/10;
+      				if(i%4==0)st7565_set_brightness((126-i)/4);
+      			  				  uint16_t j=i/2;
+      			  				  st7565_clear_buffer(buffer);
+      			  				//Linie de la i,j la marginea dreapta
+      			  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
+      			  				  					st7565_drawline(buffer,i,j,126,j2,1);
+      			  				  				  }
+      			  				  				//Linie de la i,j la marginea stanga
+      			  				  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
+      			  				  				  					st7565_drawline(buffer,i,j,0,j2,1);
+      			  				  				  				  }
+
+      			  				  				  //Linie de la i,j la margine jos
+      			  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
+      			  				  				  		st7565_drawline(buffer,i,j,i2,63,1);
+      			  				  				  }
+      			  				  				//Linie de la i,j la margine sus
+      			  				  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
+      			  				  				  				  		st7565_drawline(buffer,i,j,i2,0,1);
+      			  				  				  				  }
+
+      			  				//deseneaza frame
+      			  				st7565_write_buffer(buffer);
+    			  				//HAL_Delay(50);
+
+      			  				//osDelay(2);
+
+      			  			  }
+      			//st7565_fade_in(64);
+      			  //st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c);
+      			  //st7565_drawstring(buffer,15,2,"Hello World!!");
+
+
+      			  //HAL_ReadPin
+      			  //Trimitem comanda sa desenam
+
+      			st7565_set_brightness(0);
+  }
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_readAdcVoltFunction */
@@ -425,14 +509,11 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_readAdcVoltFunction */
-void readAdcVoltFunction(void *argument)
+void readAdcVoltFunction(void)
 {
   /* USER CODE BEGIN 5 */
 
   /* Infinite loop */
-  for(;;)
-  {
-
 
 	      hadc.Instance->CHSELR = 1<<ADC_CHANNEL_1;
 	      HAL_ADC_Start(&hadc);
@@ -443,8 +524,7 @@ void readAdcVoltFunction(void *argument)
 	      HAL_ADC_Stop(&hadc);
 
 	      voltRead = filterVolt(interpolation(voltReadRaw));
-    osDelay(5);
-  }
+
   /* USER CODE END 5 */
 }
 
@@ -455,98 +535,11 @@ void readAdcVoltFunction(void *argument)
 * @retval None
 */
 /* USER CODE END Header_displayVoltReadFunction */
-void displayVoltReadFunction(void *argument)
+void displayVoltReadFunction(void)
 {
   /* USER CODE BEGIN displayVoltReadFunction */
   /* Infinite loop */
-				st7565_init();
-  			  st7565_backlight_enable();
-  			  st7565_clear_screen();
-  			st7565_set_brightness(0);
-  			  //st7565_fade_out(64);
-  			//st7565_write_buffer(buffer); // This will show the pre-filled logo
-  			//osDelay(1000);
 
-  			//st7565_fade_in(10);
-
-
-  			  st7565_clear_buffer(buffer);
-
-  			    			  //Animatie jmekera de startup
-
-  			  uint8_t spacingx=126/10; //Cat de distantate sunt liniile in animatie x
-  			  uint8_t spacingy=63/6;
-  			  for(uint16_t i=0;i<=63;i+=2){//i,j stanga sus->centru
-  				  //spacing=5+i/10;
-  				  if(i%4==0)st7565_set_brightness(i/4);
-  				  uint16_t j=i/2;
-  				  st7565_clear_buffer(buffer);
-  				  //Linie de la i,j la marginea dreapta
-  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-  					st7565_drawline(buffer,i,j,126,j2,1);
-  				  }
-  				//Linie de la i,j la marginea stanga
-  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-  				  					st7565_drawline(buffer,i,j,0,j2,1);
-  				  				  }
-
-  				  //Linie de la i,j la margine jos
-  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-  				  		st7565_drawline(buffer,i,j,i2,63,1);
-  				  				  }
-  				//Linie de la i,j la margine sus
-  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-  				  				  		st7565_drawline(buffer,i,j,i2,0,1);
-  				  				  }
-
-  				//deseneaza frame
-  				st7565_write_buffer(buffer);
-				//HAL_Delay(50);
-
-  				//osDelay(2);
-
-  			  }
-  			for(uint16_t i=64;i<=126;i+=2){//i,j centru->dreapta jos
-  				//spacing=11-(i-64)/10;
-  				if(i%4==0)st7565_set_brightness((126-i)/4);
-  			  				  uint16_t j=i/2;
-  			  				  st7565_clear_buffer(buffer);
-  			  				//Linie de la i,j la marginea dreapta
-  			  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-  			  				  					st7565_drawline(buffer,i,j,126,j2,1);
-  			  				  				  }
-  			  				  				//Linie de la i,j la marginea stanga
-  			  				  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-  			  				  				  					st7565_drawline(buffer,i,j,0,j2,1);
-  			  				  				  				  }
-
-  			  				  				  //Linie de la i,j la margine jos
-  			  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-  			  				  				  		st7565_drawline(buffer,i,j,i2,63,1);
-  			  				  				  }
-  			  				  				//Linie de la i,j la margine sus
-  			  				  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-  			  				  				  				  		st7565_drawline(buffer,i,j,i2,0,1);
-  			  				  				  				  }
-
-  			  				//deseneaza frame
-  			  				st7565_write_buffer(buffer);
-			  				//HAL_Delay(50);
-
-  			  				//osDelay(2);
-
-  			  			  }
-  			//st7565_fade_in(64);
-  			  //st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c);
-  			  //st7565_drawstring(buffer,15,2,"Hello World!!");
-
-
-  			  //HAL_ReadPin
-  			  //Trimitem comanda sa desenam
-
-  			st7565_set_brightness(0);
-  for(;;)
-  {
 	  //st7565_fillrect(buffer,10,10,10,10,1);
 	  if(displayMode==0){
 	  st7565_clear_buffer(buffer);
@@ -657,8 +650,8 @@ void displayVoltReadFunction(void *argument)
       }
   }
   st7565_write_buffer(buffer);
-    osDelay(10);
-  }
+    //osDelay(10);
+
   /* USER CODE END displayVoltReadFunction */
 }
 
@@ -669,13 +662,11 @@ void displayVoltReadFunction(void *argument)
 * @retval None
 */
 /* USER CODE END Header_readButtonFunction */
-void readButtonFunction(void *argument)
+void readButtonFunction(void)
 {
   /* USER CODE BEGIN readButtonFunction */
   /* Infinite loop */
-	flag=1;
-  for(;;)
-  {
+
     hadc.Instance->CHSELR = 1<<ADC_CHANNEL_0;
     if (HAL_ADC_Start(&hadc) == HAL_OK) {
       if (HAL_ADC_PollForConversion(&hadc, 4) == HAL_OK) {
@@ -707,7 +698,7 @@ void readButtonFunction(void *argument)
         }
         buttonDebounceTimer += 5;
         
-        if(buttonDebounceTimer >= 50) {
+        if(buttonDebounceTimer >= 15) {
             buttonStatePrev = buttonState;
             buttonState = rawButtonState;
             buttonTransitionFlag = 0;
@@ -726,11 +717,13 @@ void readButtonFunction(void *argument)
                     showDisplayModeOverlay = 1;
                     displayModeChangeTime = HAL_GetTick();
                 }
-                else if(buttonState == 3 && buttonStatePrev == 0) {
-
+                else if(buttonState == 3 && buttonStatePrev == 0) {//apas jos
+                	if(fontMode==0)fontMode=fontModeMax;
+                	else fontMode--;
                 }
-                else if(buttonState == 4 && buttonStatePrev == 0) {
-
+                else if(buttonState == 4 && buttonStatePrev == 0) {//apas sus
+                	if(fontMode==fontModeMax)fontMode=0;
+                	else fontMode++;
                 }
             }
         }
@@ -738,9 +731,6 @@ void readButtonFunction(void *argument)
         buttonTransitionFlag = 0;
         buttonDebounceTimer = 0;
     }
-    
-    osDelay(5);
-  }
   /* USER CODE END readButtonFunction */
 }
 
