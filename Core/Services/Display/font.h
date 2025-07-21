@@ -23,5 +23,6 @@ struct FONT_DEF {
 
 extern const struct FONT_DEF Font_5x7;
 extern const uint8_t lcdfont5x7[];
+extern const uint8_t ultraFont[];
 
 #endif

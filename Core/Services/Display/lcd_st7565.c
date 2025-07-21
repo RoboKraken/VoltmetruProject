@@ -416,9 +416,9 @@ void st7565_drawbitmap(uint8_t *buff, uint8_t x, uint8_t y,
 }
 
 //draw a sting at *x/*y
-void st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c) {
+void st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c,uint8_t fontSelect) {
 	while (c[0] != 0) {
-		st7565_drawchar(buff, x, line, c[0]);
+		st7565_drawchar(buff, x, line, c[0], fontSelect);
 		c++;
 		x += 6; // 6 pixels wide
 		if (x + 6 >= LCDWIDTH) {
@@ -431,10 +431,13 @@ void st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c) {
 }
 
 //draw a single character at *x/*y
-void st7565_drawchar(uint8_t *buff, uint8_t x, uint8_t line, uint8_t c) {
+void st7565_drawchar(uint8_t *buff, uint8_t x, uint8_t line, uint8_t c, uint8_t fontSelect) {
 	uint8_t i;
 	for (i = 0; i < 5; i++) {
+		if(fontSelect==0)
 		buff[x + (line * 128)] = *(lcdfont5x7 + (c * 5) + i);
+		else if(fontSelect==1)
+		buff[x + (line * 128)] = *(ultraFont + (c * 5) + i);
 		x++;
 	}
 }

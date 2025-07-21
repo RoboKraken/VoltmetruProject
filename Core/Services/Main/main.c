@@ -29,6 +29,8 @@
 #include "lcd_st7565.h"
 #include "lcd_st7565_pinconf.h"
 #include "font.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -286,7 +288,7 @@ static void MX_ADC_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-  sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -575,7 +577,7 @@ void displayVoltReadFunction(void *argument)
 	  //st7565_fillrect(buffer,10,10,10,10,1);
 	  if(displayMode==0){
 	  st7565_clear_buffer(buffer);
-	  st7565_drawstring(buffer,0,0,"Volt:");
+	  st7565_drawstring(buffer,0,0,"Volt:",fontMode);
 	    			char volt[100];
 	    			itoa(voltRead,volt,10);
 	    			if(voltRead<10){
@@ -599,11 +601,13 @@ void displayVoltReadFunction(void *argument)
 	    				volt[1]='.';
 	    				//volt[0]=volt[0];
 	    			}
-	    			st7565_drawstring(buffer,0,1,volt);
-	  st7565_write_buffer(buffer);}
+	    			st7565_drawstring(buffer,0,1,volt,fontMode);
+
+	  }
+
 	  else if(displayMode==1){
       st7565_clear_buffer(buffer);
-      st7565_drawstring(buffer,30,2,"Volt Range");
+      st7565_drawstring(buffer,30,2,"Volt Range",fontMode);
       int bar_x0 = 5;
       int bar_x1 = 121;
       int bar_y0 = 30;
@@ -643,13 +647,43 @@ void displayVoltReadFunction(void *argument)
 
       st7565_setpixel(buffer, bar_x1 -1, bar_y0+1, 1);
       st7565_setpixel(buffer, bar_x1 -1, bar_y1-1, 1);
-      st7565_drawstring(buffer, 0, 5, "0");
-      st7565_drawstring(buffer, 20, 5, "0.8");
-      st7565_drawstring(buffer, 45, 5, "1.6");
-      st7565_drawstring(buffer, 75, 5, "2.5");
-      st7565_drawstring(buffer, 108, 5, "3.3");
-      st7565_write_buffer(buffer);
+      st7565_drawstring(buffer, 0, 5, "0",fontMode);
+      st7565_drawstring(buffer, 20, 5, "0.8",fontMode);
+      st7565_drawstring(buffer, 45, 5, "1.6",fontMode);
+      st7565_drawstring(buffer, 75, 5, "2.5",fontMode);
+      st7565_drawstring(buffer, 108, 5, "3.3",fontMode);
+
   }
+	  else if(displayMode==100){
+
+      //st7565_drawstring(buffer, 0, 0, "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F",fontMode);
+		st7565_clear_buffer(buffer);
+		st7565_drawstring(buffer, 0, 0, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",fontMode);
+	  }
+  //Mesaj temporar dreapta jos de schimbare mod, suprascrie ce este sub el
+  if(showDisplayModeOverlay) {
+      if((HAL_GetTick() - displayModeChangeTime) >= 1250) {
+          showDisplayModeOverlay = 0;
+      } else {
+          uint8_t rect_x = 80;
+          uint8_t rect_y = 45;
+          uint8_t rect_w = 47;
+          uint8_t rect_h = 18;
+          
+          st7565_fillrect(buffer, rect_x, rect_y, rect_w, rect_h, 0);
+          
+          st7565_drawline(buffer, rect_x, rect_y, rect_x + rect_w, rect_y, 1);
+          st7565_drawline(buffer, rect_x, rect_y, rect_x, rect_y + rect_h, 1);
+          st7565_drawline(buffer, rect_x + rect_w, rect_y, rect_x + rect_w, rect_y + rect_h, 1);
+          st7565_drawline(buffer, rect_x, rect_y + rect_h, rect_x + rect_w, rect_y + rect_h, 1);
+          
+          uint8_t overlay_text[20];
+          sprintf(overlay_text, "Mode %d", displayMode);
+          st7565_drawstring(buffer, rect_x + 2, rect_y/8 + 1, overlay_text, fontMode);
+
+      }
+  }
+  st7565_write_buffer(buffer);
     osDelay(10);
   }
   /* USER CODE END displayVoltReadFunction */
@@ -681,20 +715,57 @@ void readButtonFunction(void *argument)
     }
     buttonRead[0]=buttonRead[1];
     buttonRead[1]=filterButton(interpolation(buttonReadRaw));
-    if(buttonRead[1]<=50&&buttonRead[0]>50){
-      if(displayMode==0)displayMode=displayModeMax;
-      else displayMode--;
+    
+    uint8_t rawButtonState = 0;
+    if(buttonRead[1] <= 50) {
+        rawButtonState = 1;
+    } else if(buttonRead[1] > 290 && buttonRead[1] < 315) {
+        rawButtonState = 2;
+    } else if(buttonRead[1] > 186 && buttonRead[1] < 206) {
+        rawButtonState = 3;
+    } else if(buttonRead[1] > 86 && buttonRead[1] < 108) {
+        rawButtonState = 4;
     }
-    else if(buttonRead[1]>300&&buttonRead[1]<315&&(buttonRead[0]>=315||buttonRead[0]<=300)){
-      if(displayMode==displayModeMax)displayMode=0;
-      else displayMode++;
-    }
-    else if(buttonRead[1]>186&&buttonRead[1]<206&&(buttonRead[0]>=206||buttonRead[0]<=186)){
+    
+    if(rawButtonState != buttonState) {
+        if(!buttonTransitionFlag) {
+            buttonTransitionFlag = 1;
+            buttonDebounceTimer = 0;
+        }
+        buttonDebounceTimer += 5;
+        
+        if(buttonDebounceTimer >= 50) {
+            buttonStatePrev = buttonState;
+            buttonState = rawButtonState;
+            buttonTransitionFlag = 0;
+            buttonDebounceTimer = 0;
+            
+            if(!buttonTransitionFlag) {
+                if(buttonState == 1 && buttonStatePrev == 0) {
+                    if(displayMode==0)displayMode=displayModeMax;
+                    else displayMode--;
+                    showDisplayModeOverlay = 1;
+                    displayModeChangeTime = HAL_GetTick();
+                }
+                else if(buttonState == 2 && buttonStatePrev == 0) {
+                    if(displayMode==displayModeMax)displayMode=0;
+                    else displayMode++;
+                    showDisplayModeOverlay = 1;
+                    displayModeChangeTime = HAL_GetTick();
+                }
+                else if(buttonState == 3 && buttonStatePrev == 0) {
 
-    }
-    else if(buttonRead[1]>87&&buttonRead[1]<107&&(buttonRead[0]>=107||buttonRead[0]<=87)){
+                }
+                else if(buttonState == 4 && buttonStatePrev == 0) {
 
+                }
+            }
+        }
+    } else {
+        buttonTransitionFlag = 0;
+        buttonDebounceTimer = 0;
     }
+    
     osDelay(5);
   }
   /* USER CODE END readButtonFunction */

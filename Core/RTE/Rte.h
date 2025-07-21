@@ -16,4 +16,14 @@ extern uint8_t displayMode;
 extern uint8_t displayModeMax;
 extern volatile uint16_t adc_buffer[2];
 
+extern uint8_t fontMode;
+
+extern uint8_t buttonState;
+extern uint8_t buttonStatePrev;
+extern uint32_t buttonDebounceTimer;
+extern uint8_t buttonTransitionFlag;
+
+extern uint32_t displayModeChangeTime;
+extern uint8_t showDisplayModeOverlay;
+
 #endif /* RTE_RTE_H_ */

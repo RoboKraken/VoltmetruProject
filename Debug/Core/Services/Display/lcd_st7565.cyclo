@@ -12,10 +12,10 @@
 ../Core/Services/Display/lcd_st7565.c:394:6:st7565_setpixel	4
 ../Core/Services/Display/lcd_st7565.c:406:6:st7565_drawbitmap	4
 ../Core/Services/Display/lcd_st7565.c:419:6:st7565_drawstring	4
-../Core/Services/Display/lcd_st7565.c:434:6:st7565_drawchar	2
-../Core/Services/Display/lcd_st7565.c:443:6:st7565_clearpixel	1
-../Core/Services/Display/lcd_st7565.c:449:6:st7565_drawline	9
-../Core/Services/Display/lcd_st7565.c:506:6:st7565_fillrect	3
-../Core/Services/Display/lcd_st7565.c:518:6:st7565_drawrect	3
-../Core/Services/Display/lcd_st7565.c:533:6:st7565_drawcircle	3
-../Core/Services/Display/lcd_st7565.c:565:6:st7565_fillcircle	6
+../Core/Services/Display/lcd_st7565.c:434:6:st7565_drawchar	4
+../Core/Services/Display/lcd_st7565.c:446:6:st7565_clearpixel	1
+../Core/Services/Display/lcd_st7565.c:452:6:st7565_drawline	9
+../Core/Services/Display/lcd_st7565.c:509:6:st7565_fillrect	3
+../Core/Services/Display/lcd_st7565.c:521:6:st7565_drawrect	3
+../Core/Services/Display/lcd_st7565.c:536:6:st7565_drawcircle	3
+../Core/Services/Display/lcd_st7565.c:568:6:st7565_fillcircle	6

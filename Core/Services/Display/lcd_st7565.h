@@ -75,8 +75,8 @@ void st7565_clear_buffer(uint8_t *buffer);
 void st7565_write_buffer(uint8_t *buffer);
 
 //higher "draw"-prototypes
-void st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c);
-void st7565_drawchar(uint8_t *buff, uint8_t x, uint8_t line, uint8_t c);
+void st7565_drawstring(uint8_t *buff, uint8_t x, uint8_t line, uint8_t *c, uint8_t fontSelect);
+void st7565_drawchar(uint8_t *buff, uint8_t x, uint8_t line, uint8_t c, uint8_t fontSelect);
 void st7565_setpixel(uint8_t *buff, uint8_t x, uint8_t y, uint8_t color);
 void st7565_clearpixel(uint8_t *buff, uint8_t x, uint8_t y);
 
