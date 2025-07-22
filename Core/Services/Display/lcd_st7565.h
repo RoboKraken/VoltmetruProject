@@ -46,6 +46,8 @@
 #define ST7565_CMD_NOP                    0xE3
 #define ST7565_CMD_TEST                   0xF0
 
+#define CMD(c)        do { HAL_GPIO_WritePin( SPICD_GPIO_Port, ST7565_A0_PIN, 0 ); st7565_sendbyte( c ); } while (0);
+
 #define ST7565_TRUE                     1
 #define ST7565_FALSE                    0
 #define ST7565_ASINCRON_TRANSMIT        ST7565_FALSE
@@ -92,5 +94,6 @@ void st7565_drawbitmap(uint8_t *buff, uint8_t x, uint8_t y, const uint8_t *bitma
 
 //Define for external bitmaps
 extern uint8_t buffer[];
+extern uint8_t pagemap[];
 
 #endif

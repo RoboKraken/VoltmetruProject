@@ -10,6 +10,6 @@
 ../Core/Services/Main/main.c:414:6:init_task	14
 ../Core/Services/Main/main.c:512:6:readAdcVoltFunction	2
 ../Core/Services/Main/main.c:538:6:displayVoltReadFunction	18
-../Core/Services/Main/main.c:665:6:readButtonFunction	26
-../Core/Services/Main/main.c:745:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Services/Main/main.c:763:6:Error_Handler	1
+../Core/Services/Main/main.c:666:6:readButtonFunction	26
+../Core/Services/Main/main.c:746:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Services/Main/main.c:764:6:Error_Handler	1

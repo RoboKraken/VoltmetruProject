@@ -144,11 +144,11 @@ int main(void)
   uint8_t nrTasks=3; //Numar taskuri
   SimpleTask tasks[] = {
     {"readAdcVoltFunction", readAdcVoltFunction, 1},
-	{"displayVoltReadFunction", displayVoltReadFunction, 29},
+	{"displayVoltReadFunction", displayVoltReadFunction, 1},
     {"readButtonFunction",readButtonFunction,1}
   };//timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor ms a tuturor taskurilor.
 
-  uint32_t initTaskMaxTime=2750; //timp alocat task-ului de init OS(dupa initializarea OS-ului in sine). In ms.
+  uint32_t initTaskMaxTime=1570; //timp alocat task-ului de init OS(dupa initializarea OS-ului in sine). In ms.
   OS_Init(tasks, nrTasks, init_task,initTaskMaxTime);
   OS_Run();
 
@@ -437,20 +437,20 @@ void init_task(void) {
       				  st7565_clear_buffer(buffer);
       				  //Linie de la i,j la marginea dreapta
       				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-      					st7565_drawline(buffer,i,j,126,j2,1);
+      					st7565_drawline_complex(buffer,i,j,126,j2,1);
       				  }
       				//Linie de la i,j la marginea stanga
       				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-      				  					st7565_drawline(buffer,i,j,0,j2,1);
+      				  					st7565_drawline_complex(buffer,i,j,0,j2,1);
       				  				  }
 
       				  //Linie de la i,j la margine jos
       				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-      				  		st7565_drawline(buffer,i,j,i2,63,1);
+      				  		st7565_drawline_complex(buffer,i,j,i2,63,1);
       				  				  }
       				//Linie de la i,j la margine sus
       				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-      				  				  		st7565_drawline(buffer,i,j,i2,0,1);
+      				  				  		st7565_drawline_complex(buffer,i,j,i2,0,1);
       				  				  }
 
       				//deseneaza frame
@@ -467,20 +467,20 @@ void init_task(void) {
       			  				  st7565_clear_buffer(buffer);
       			  				//Linie de la i,j la marginea dreapta
       			  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-      			  				  					st7565_drawline(buffer,i,j,126,j2,1);
+      			  				  					st7565_drawline_complex(buffer,i,j,126,j2,1);
       			  				  				  }
       			  				  				//Linie de la i,j la marginea stanga
       			  				  				  				  for(uint16_t j2=0;j2<=63;j2+=spacingy){
-      			  				  				  					st7565_drawline(buffer,i,j,0,j2,1);
+      			  				  				  					st7565_drawline_complex(buffer,i,j,0,j2,1);
       			  				  				  				  }
 
       			  				  				  //Linie de la i,j la margine jos
       			  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-      			  				  				  		st7565_drawline(buffer,i,j,i2,63,1);
+      			  				  				  		st7565_drawline_complex(buffer,i,j,i2,63,1);
       			  				  				  }
       			  				  				//Linie de la i,j la margine sus
       			  				  				  				  for(uint16_t i2=0;i2<=126;i2+=spacingx){
-      			  				  				  				  		st7565_drawline(buffer,i,j,i2,0,1);
+      			  				  				  				  		st7565_drawline_complex(buffer,i,j,i2,0,1);
       			  				  				  				  }
 
       			  				//deseneaza frame
@@ -537,122 +537,123 @@ void readAdcVoltFunction(void)
 /* USER CODE END Header_displayVoltReadFunction */
 void displayVoltReadFunction(void)
 {
-  /* USER CODE BEGIN displayVoltReadFunction */
-  /* Infinite loop */
+    enum { DRAWING, SENDING_PAGE, WAITING };
+    static uint8_t state = DRAWING;
+    static uint8_t current_page = 0;
+    static uint32_t last_frame_time = 0;
+    static uint8_t local_buffer[1024];
+    uint32_t now = HAL_GetTick();
 
-	  //st7565_fillrect(buffer,10,10,10,10,1);
-	  if(displayMode==0){
-	  st7565_clear_buffer(buffer);
-	  st7565_drawstring(buffer,0,0,"Volt:",fontMode);
-	    			char volt[100];
-	    			itoa(voltRead,volt,10);
-	    			if(voltRead<10){
-	    				volt[4]='\0';
-	    				volt[3]=volt[0];
-	    				volt[2]='0';
-	    				volt[1]='.';
-	    				volt[0]='0';
-	    			}
-	    			else if(voltRead>=10&&voltRead<100){
-	    				volt[4]='\0';
-	    				volt[3]=volt[1];
-	    				volt[2]=volt[0];
-	    				volt[1]='.';
-	    				volt[0]='0';
-	    			}
-	    			else{
-	    				volt[4]='\0';
-	    				volt[3]=volt[2];
-	    				volt[2]=volt[1];
-	    				volt[1]='.';
-	    				//volt[0]=volt[0];
-	    			}
-	    			st7565_drawstring(buffer,0,1,volt,fontMode);
-
-	  }
-
-	  else if(displayMode==1){
-      st7565_clear_buffer(buffer);
-      st7565_drawstring(buffer,30,2,"Volt Range",fontMode);
-      int bar_x0 = 5;
-      int bar_x1 = 121;
-      int bar_y0 = 30;
-      int bar_y1 = 37;
-      int squares = 10;
-      int inner_x0 = bar_x0 + 1;
-      int inner_x1 = bar_x1 - 1;
-      int inner_y0 = bar_y0 + 1;
-      int inner_y1 = bar_y1 - 1;
-      int inner_width = inner_x1 - inner_x0 + 1;
-      int square_width = inner_width / squares;
-      int remainder = inner_width - square_width * squares;
-      int volt_step = 330 / squares;
-      int x = inner_x0;
-      for(int i = 0; i < squares; i++) {
-          int w = square_width + (i < remainder ? 1 : 0);
-          int threshold = (i + 1) * volt_step;
-          if(voltRead >= threshold) {
-              st7565_fillrect(buffer, x, inner_y0, w, inner_y1 - inner_y0 + 1, 1);
-          }
-          x += w;
-      }
-      for(int px = bar_x0 + 1; px < bar_x1; px++) {
-          if(px != bar_x0 + 1 && px != bar_x1 - 1) {
-              st7565_setpixel(buffer, px, bar_y0, 1);
-              st7565_setpixel(buffer, px, bar_y1, 1);
-          }
-      }
-      for(int py = bar_y0 + 1; py < bar_y1; py++) {
-          if(py != bar_y0 + 1 && py != bar_y1 - 1) {
-              st7565_setpixel(buffer, bar_x0, py, 1);
-              st7565_setpixel(buffer, bar_x1, py, 1);
-          }
-      }
-      st7565_setpixel(buffer, bar_x0 +1, bar_y0+1, 1);
-      st7565_setpixel(buffer, bar_x0 +1, bar_y1-1, 1);
-
-      st7565_setpixel(buffer, bar_x1 -1, bar_y0+1, 1);
-      st7565_setpixel(buffer, bar_x1 -1, bar_y1-1, 1);
-      st7565_drawstring(buffer, 0, 5, "0",fontMode);
-      st7565_drawstring(buffer, 20, 5, "0.8",fontMode);
-      st7565_drawstring(buffer, 45, 5, "1.6",fontMode);
-      st7565_drawstring(buffer, 75, 5, "2.5",fontMode);
-      st7565_drawstring(buffer, 108, 5, "3.3",fontMode);
-
-  }
-	  else if(displayMode==100){
-
-      //st7565_drawstring(buffer, 0, 0, "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F",fontMode);
-		st7565_clear_buffer(buffer);
-		st7565_drawstring(buffer, 0, 0, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",fontMode);
-	  }
-  //Mesaj temporar dreapta jos de schimbare mod, suprascrie ce este sub el
-  if(showDisplayModeOverlay) {
-      if((HAL_GetTick() - displayModeChangeTime) >= 1250) {
-          showDisplayModeOverlay = 0;
-      } else {
-          uint8_t rect_x = 80;
-          uint8_t rect_y = 45;
-          uint8_t rect_w = 47;
-          uint8_t rect_h = 18;
-          
-          st7565_fillrect(buffer, rect_x, rect_y, rect_w, rect_h, 0);
-          
-          st7565_drawline(buffer, rect_x, rect_y, rect_x + rect_w, rect_y, 1);
-          st7565_drawline(buffer, rect_x, rect_y, rect_x, rect_y + rect_h, 1);
-          st7565_drawline(buffer, rect_x + rect_w, rect_y, rect_x + rect_w, rect_y + rect_h, 1);
-          st7565_drawline(buffer, rect_x, rect_y + rect_h, rect_x + rect_w, rect_y + rect_h, 1);
-          
-          uint8_t overlay_text[20];
-          sprintf(overlay_text, "Mode %d", displayMode);
-          st7565_drawstring(buffer, rect_x + 2, rect_y/8 + 1, overlay_text, fontMode);
-
-      }
-  }
-  st7565_write_buffer(buffer);
-    //osDelay(10);
-
-  /* USER CODE END displayVoltReadFunction */
+    switch(state) {
+        case DRAWING:
+            // Draw everything into local_buffer
+            st7565_clear_buffer(local_buffer);
+            if(displayMode==0){
+                st7565_drawstring(local_buffer,0,0,"Volt:",fontMode);
+                char volt[100];
+                itoa(voltRead,volt,10);
+                if(voltRead<10){
+                    volt[4]='\0';
+                    volt[3]=volt[0];
+                    volt[2]='0';
+                    volt[1]='.';
+                    volt[0]='0';
+                }
+                else if(voltRead>=10&&voltRead<100){
+                    volt[4]='\0';
+                    volt[3]=volt[1];
+                    volt[2]=volt[0];
+                    volt[1]='.';
+                    volt[0]='0';
+                }
+                else{
+                    volt[4]='\0';
+                    volt[3]=volt[2];
+                    volt[2]=volt[1];
+                    volt[1]='.';
+                }
+                st7565_drawstring(local_buffer,0,1,volt,fontMode);
+            } else if(displayMode==1){
+                st7565_drawstring(local_buffer,30,2,"Volt Range",fontMode);
+                int bar_x0 = 5;
+                int bar_x1 = 121;
+                int bar_y0 = 30;
+                int bar_y1 = 37;
+                int squares = 10;
+                int inner_x0 = bar_x0 + 1;
+                int inner_x1 = bar_x1 - 1;
+                int inner_y0 = bar_y0 + 1;
+                int inner_y1 = bar_y1 - 1;
+                int inner_width = inner_x1 - inner_x0 + 1;
+                int square_width = inner_width / squares;
+                int remainder = inner_width - square_width * squares;
+                int volt_step = 330 / squares;
+                int x = inner_x0;
+                for(int i = 0; i < squares; i++) {
+                    int w = square_width + (i < remainder ? 1 : 0);
+                    int threshold = (i + 1) * volt_step;
+                    if(voltRead >= threshold) {
+                        st7565_fillrect(local_buffer, x, inner_y0, w, inner_y1 - inner_y0 + 1, 1);
+                    }
+                    x += w;
+                }
+                st7565_drawline(local_buffer, bar_x0+1, bar_y0, bar_x1-1, bar_y0, 1);
+                st7565_drawline(local_buffer, bar_x0+1, bar_y1, bar_x1-1, bar_y1, 1);
+                st7565_drawline(local_buffer, bar_x0, bar_y0+1, bar_x0, bar_y1-1, 1);
+                st7565_drawline(local_buffer, bar_x1, bar_y0+1, bar_x1, bar_y1-1, 1);
+                st7565_setpixel(local_buffer, bar_x0 +1, bar_y0+1, 1);
+                st7565_setpixel(local_buffer, bar_x0 +1, bar_y1-1, 1);
+                st7565_setpixel(local_buffer, bar_x1 -1, bar_y0+1, 1);
+                st7565_setpixel(local_buffer, bar_x1 -1, bar_y1-1, 1);
+                st7565_drawstring(local_buffer, 0, 5, "0",fontMode);
+                st7565_drawstring(local_buffer, 20, 5, "0.8",fontMode);
+                st7565_drawstring(local_buffer, 45, 5, "1.6",fontMode);
+                st7565_drawstring(local_buffer, 75, 5, "2.5",fontMode);
+                st7565_drawstring(local_buffer, 108, 5, "3.3",fontMode);
+            } else if(displayMode==100){
+                st7565_drawstring(local_buffer, 0, 0, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",fontMode);
+            }
+            if(showDisplayModeOverlay) {
+                if((now - displayModeChangeTime) < 1250) {
+                    uint8_t rect_x = 80;
+                    uint8_t rect_y = 45;
+                    uint8_t rect_w = 47;
+                    uint8_t rect_h = 18;
+                    st7565_fillrect(local_buffer, rect_x, rect_y, rect_w, rect_h, 0);
+                    st7565_drawline(local_buffer, rect_x, rect_y, rect_x + rect_w, rect_y, 1);
+                    st7565_drawline(local_buffer, rect_x, rect_y, rect_x, rect_y + rect_h, 1);
+                    st7565_drawline(local_buffer, rect_x + rect_w, rect_y, rect_x + rect_w, rect_y + rect_h, 1);
+                    st7565_drawline(local_buffer, rect_x, rect_y + rect_h, rect_x + rect_w, rect_y + rect_h, 1);
+                    uint8_t overlay_text[20]="Mode  ";
+                    overlay_text[5]=displayMode+'0';
+                    //sprintf(overlay_text, "Mode %d", displayMode); ineficient
+                    st7565_drawstring(local_buffer, rect_x + 2, rect_y/8 + 1, overlay_text, fontMode);
+                } else {
+                    showDisplayModeOverlay = 0;
+                }
+            }
+            state = SENDING_PAGE;
+            current_page = 0;
+            break;
+        case SENDING_PAGE:
+            CMD(ST7565_CMD_SET_PAGE | pagemap[current_page]);
+            CMD(ST7565_CMD_SET_COLUMN_LOWER | (0x0 & 0xf));
+            CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
+            CMD(ST7565_CMD_RMW);
+            HAL_GPIO_WritePin(SPICD_GPIO_Port, ST7565_A0_PIN, 1);
+            HAL_SPI_Transmit(&hspi1, &local_buffer[128 * current_page], 128, 6);
+            current_page++;
+            if (current_page >= 8) {
+                state = WAITING;
+                last_frame_time = now;
+            }
+            break;
+        case WAITING:
+            if (now - last_frame_time >= 42) {
+                state = DRAWING;
+            }
+            break;
+    }
 }
 
 /* USER CODE BEGIN Header_readButtonFunction */

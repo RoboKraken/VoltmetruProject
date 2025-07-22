@@ -228,17 +228,15 @@ void st7565_write_buffer(uint8_t *buffer)
 #else
 void st7565_write_buffer(uint8_t *buffer)
 {
-	uint8_t c, p;
-	for (p = 0; p < 8; p++) {
-		CMD(ST7565_CMD_SET_PAGE | pagemap[p]);
-		CMD(ST7565_CMD_SET_COLUMN_LOWER | (0x0 & 0xf));
-		CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
-		CMD(ST7565_CMD_RMW);
-		//DATA(0xff);
-		for (c = 0; c < 128; c++) {
-			DATA(buffer[(128 * p) + c]);
-		}
-	}
+    uint8_t p;
+    for (p = 0; p < 8; p++) {
+        CMD(ST7565_CMD_SET_PAGE | pagemap[p]);
+        CMD(ST7565_CMD_SET_COLUMN_LOWER | (0x0 & 0xf));
+        CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
+        CMD(ST7565_CMD_RMW);
+        HAL_GPIO_WritePin(SPICD_GPIO_Port, ST7565_A0_PIN, 1);
+        HAL_SPI_Transmit(&hspi1, &buffer[128 * p], 128, 6);
+    }
 }
 #endif
 
@@ -449,7 +447,7 @@ void st7565_clearpixel(uint8_t *buff, uint8_t x, uint8_t y) {
 }
 
 // Draw a line, based on bresenham's algorithm
-void st7565_drawline(uint8_t *buff, uint8_t x0, uint8_t y0, uint8_t x1,
+void st7565_drawline_complex(uint8_t *buff, uint8_t x0, uint8_t y0, uint8_t x1,
 		uint8_t y1, uint8_t color) {
 	uint8_t tmp, swap = 0;
 	uint8_t x, y;
@@ -506,15 +504,35 @@ void st7565_drawline(uint8_t *buff, uint8_t x0, uint8_t y0, uint8_t x1,
 }
 
 // draw a filled rectangle
-void st7565_fillrect(uint8_t *buff, uint8_t x, uint8_t y, uint8_t w, uint8_t h,
-		uint8_t color) {
-// stupidest version - just pixels - but fast with internal buffer!
-	uint8_t i, j;
-	for (i = x; i < x + w; i++) {
-		for (j = y; j < y + h; j++) {
-			st7565_setpixel(buff, i, j, color);
-		}
-	}
+void st7565_fillrect(uint8_t *buff, uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t color) {
+    if (x >= LCDWIDTH || y >= LCDHEIGHT)
+        return;
+    if (x + w > LCDWIDTH)
+        w = LCDWIDTH - x;
+    if (y + h > LCDHEIGHT)
+        h = LCDHEIGHT - y;
+    uint8_t y_start = y;
+    uint8_t y_end = y + h - 1;
+    uint8_t page_start = y_start / 8;
+    uint8_t page_end = y_end / 8;
+    uint8_t bit_start = y_start % 8;
+    uint8_t bit_end = y_end % 8;
+    for (uint8_t px = x; px < x + w; px++) {
+        for (uint8_t page = page_start; page <= page_end; page++) {
+            uint8_t mask = 0xFF;
+            if (page == page_start) {
+                mask &= (0xFF >> bit_start);
+            }
+            if (page == page_end) {
+                mask &= (0xFF << (7 - bit_end));
+            }
+            uint16_t idx = px + page * 128;
+            if (color)
+                buff[idx] |= mask;
+            else
+                buff[idx] &= ~mask;
+        }
+    }
 }
 
 // draw a rectangle
@@ -594,4 +612,59 @@ void st7565_fillcircle(uint8_t *buff, uint8_t x0, uint8_t y0, uint8_t r,
 			st7565_setpixel(buff, x0 - y, i, color);
 		}
 	}
+}
+
+void st7565_drawline(uint8_t *buff, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color) {
+    if (x0 == x1) {
+        if (x0 >= LCDWIDTH)
+            return;
+        uint8_t y_start = y0 < y1 ? y0 : y1;
+        uint8_t y_end = y0 > y1 ? y0 : y1;
+        if (y_end >= LCDHEIGHT)
+            y_end = LCDHEIGHT - 1;
+        uint8_t page_start = y_start / 8;
+        uint8_t page_end = y_end / 8;
+        uint8_t bit_start = y_start % 8;
+        uint8_t bit_end = y_end % 8;
+        for (uint8_t page = page_start; page <= page_end; page++) {
+            uint8_t mask = 0xFF;
+            if (page == page_start) {
+                mask &= (0xFF >> bit_start);
+            }
+            if (page == page_end) {
+                mask &= (0xFF << (7 - bit_end));
+            }
+            uint16_t idx = x0 + page * 128;
+            if (color)
+                buff[idx] |= mask;
+            else
+                buff[idx] &= ~mask;
+        }
+    } else if (y0 == y1) {
+        if (y0 >= LCDHEIGHT)
+            return;
+        uint8_t x_start = x0 < x1 ? x0 : x1;
+        uint8_t x_end = x0 > x1 ? x0 : x1;
+        if (x_end >= LCDWIDTH)
+            x_end = LCDWIDTH - 1;
+        uint8_t page = y0 / 8;
+        uint8_t bit = 7 - (y0 % 8);
+        uint8_t mask = 1 << bit;
+        uint16_t idx = x_start + page * 128;
+        // 32-bit write optimization
+        uint32_t *p32 = (uint32_t *)&buff[idx];
+        uint32_t val = color ? 0xFFFFFFFF : 0x00000000;
+        uint8_t rem = (x_end - x_start + 1);
+        while (rem >= 4 && (((uintptr_t)p32 & 0x3) == 0)) {
+            if (color) *p32 |= (val & (mask * 0x01010101));
+            else *p32 &= ~(mask * 0x01010101);
+            p32++;
+            rem -= 4;
+        }
+        idx = (uint8_t *)p32 - &buff[x_start + page * 128];
+        for (uint8_t i = 0; i < rem; i++) {
+            if (color) buff[x_start + page * 128 + idx + i] |= mask;
+            else buff[x_start + page * 128 + idx + i] &= ~mask;
+        }
+    }
 }
