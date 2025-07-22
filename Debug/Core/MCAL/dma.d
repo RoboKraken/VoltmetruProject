@@ -1,5 +1,5 @@
-Core/MCAL/stm32f0xx_hal_timebase_tim.o: \
- ../Core/MCAL/stm32f0xx_hal_timebase_tim.c \
+Core/MCAL/dma.o: ../Core/MCAL/dma.c ../Core/MCAL/dma.h \
+ ../Core/Services/Main/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h \
  ../Core/MCAL/stm32f0xx_hal_conf.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_rcc.h \
@@ -31,6 +31,8 @@ Core/MCAL/stm32f0xx_hal_timebase_tim.o: \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h
+../Core/MCAL/dma.h:
+../Core/Services/Main/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h:
 ../Core/MCAL/stm32f0xx_hal_conf.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_rcc.h:

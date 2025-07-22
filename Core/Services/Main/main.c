@@ -18,11 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-//#include "cmsis_os.h" foloseste prea mult stack
 #include "adc.h"
+#include "dma.h"
 #include "spi.h"
-#include "gpio.h"
 #include "tim.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -46,6 +46,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define ADC_BUFFER_SIZE_BUTTON 1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -104,7 +105,6 @@ uint8_t test = 0;
 uint8_t flag=0;
 uint8_t buttonTaskCreated = 0;
 
-
 /* USER CODE END 0 */
 
 /**
@@ -136,12 +136,16 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC_Init();
   MX_SPI1_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim2);
+  HAL_TIM_Base_Start(&htim3);
+  HAL_ADC_Start_DMA(&hadc, (uint32_t*)adc_buffer, ADC_BUFFER_SIZE);
   /* USER CODE END 2 */
 
   uint8_t nrTasks=3; //Numar taskuri
@@ -327,14 +331,15 @@ void readAdcVoltFunction(void)
 
   /* Infinite loop */
 
-	      hadc.Instance->CHSELR = 1<<ADC_CHANNEL_1;
+	      /*hadc.Instance->CHSELR = 1<<ADC_CHANNEL_1;
 	      HAL_ADC_Start(&hadc);
-	      if(HAL_ADC_PollForConversion(&hadc, 30)==HAL_OK)
+	      if(HAL_ADC_PollForConversion(&hadc, 4)==HAL_OK)
 	      voltReadRaw = HAL_ADC_GetValue(&hadc);
 	      else voltReadRaw=0;
 
-	      HAL_ADC_Stop(&hadc);
+	      HAL_ADC_Stop(&hadc);*/
 
+			voltReadRaw=adc_buffer[255];
 	      voltRead = filterVolt(interpolation(voltReadRaw));
 
   /* USER CODE END 5 */
@@ -419,6 +424,14 @@ void displayVoltReadFunction(void)
                 st7565_drawstring(buffer, 45, 5, "1.6",fontMode);
                 st7565_drawstring(buffer, 75, 5, "2.5",fontMode);
                 st7565_drawstring(buffer, 108, 5, "3.3",fontMode);
+            } else if(displayMode==2){
+                for(int x=1; x<256; x+=2) {
+                    int value = adc_buffer[x];
+                    int y = 63 - (value * 63 / 4095);
+                    if(y<0) y=0;
+                    if(y>63) y=63;
+                    st7565_setpixel(buffer, (x-1)/2, y, 1);
+                }
             } else if(displayMode==100){
                 st7565_drawstring(buffer, 0, 0, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",fontMode);
             }
@@ -485,7 +498,7 @@ void readButtonFunction(void)
   /* USER CODE BEGIN readButtonFunction */
   /* Infinite loop */
 
-    hadc.Instance->CHSELR = 1<<ADC_CHANNEL_0;
+    /*hadc.Instance->CHSELR = 1<<ADC_CHANNEL_0;
     if (HAL_ADC_Start(&hadc) == HAL_OK) {
       if (HAL_ADC_PollForConversion(&hadc, 4) == HAL_OK) {
         buttonReadRaw = HAL_ADC_GetValue(&hadc);
@@ -495,6 +508,8 @@ void readButtonFunction(void)
     } else {
       buttonReadRaw = 666;
     }
+    HAL_ADC_Stop(&hadc);*/
+	buttonReadRaw=adc_buffer[254];
     buttonRead[0]=buttonRead[1];
     buttonRead[1]=filterButton(interpolation(buttonReadRaw));
     

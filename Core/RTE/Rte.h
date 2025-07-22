@@ -7,6 +7,7 @@
 
 #ifndef RTE_RTE_H_
 #define RTE_RTE_H_
+#define ADC_BUFFER_SIZE 256
 
 extern uint16_t voltReadRaw;
 extern uint16_t buttonReadRaw;
@@ -14,7 +15,7 @@ extern uint16_t voltRead;
 extern uint16_t buttonRead[2];
 extern uint8_t displayMode;
 extern uint8_t displayModeMax;
-extern volatile uint16_t adc_buffer[2];
+extern volatile uint16_t adc_buffer[ADC_BUFFER_SIZE];
 
 extern uint8_t fontMode;
 extern uint8_t fontModeMax;

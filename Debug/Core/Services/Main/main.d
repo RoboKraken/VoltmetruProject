@@ -31,8 +31,8 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h \
- ../Core/MCAL/adc.h ../Core/Services/Main/main.h ../Core/MCAL/spi.h \
- ../Core/MCAL/gpio.h ../Core/MCAL/tim.h \
+ ../Core/MCAL/adc.h ../Core/Services/Main/main.h ../Core/MCAL/dma.h \
+ ../Core/MCAL/spi.h ../Core/MCAL/tim.h ../Core/MCAL/gpio.h \
  ../Core/Applications/VoltInterpolation.c \
  ../Core/Applications/MAFilterButton.c \
  ../Core/Applications/MAFilterVolt.c ../Core/RTE/Rte.h \
@@ -75,9 +75,10 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h:
 ../Core/MCAL/adc.h:
 ../Core/Services/Main/main.h:
+../Core/MCAL/dma.h:
 ../Core/MCAL/spi.h:
-../Core/MCAL/gpio.h:
 ../Core/MCAL/tim.h:
+../Core/MCAL/gpio.h:
 ../Core/Applications/VoltInterpolation.c:
 ../Core/Applications/MAFilterButton.c:
 ../Core/Applications/MAFilterVolt.c:
