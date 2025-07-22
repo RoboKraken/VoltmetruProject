@@ -19,7 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 //#include "cmsis_os.h" foloseste prea mult stack
-#include "simple_os.h"
+#include "adc.h"
+#include "spi.h"
+#include "gpio.h"
+#include "tim.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -32,11 +35,7 @@
 #include "font.h"
 #include <stdio.h>
 #include <string.h>
-/*#define POPUP_W 47
-#define POPUP_H 18
-#define POPUP_X 80
-#define POPUP_Y 45
-static uint8_t popup_buffer[POPUP_W * ((POPUP_H + 7) / 8)];*/
+#include "simple_os.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,11 +54,11 @@ static uint8_t popup_buffer[POPUP_W * ((POPUP_H + 7) / 8)];*/
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc;
+/*ADC_HandleTypeDef hadc;
 
-SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi1;*/
 
-UART_HandleTypeDef huart2;
+//UART_HandleTypeDef huart2;
 
 /* Definitions for readAdcVolt */
 /*osThreadId_t readAdcVoltHandle;
@@ -89,10 +88,6 @@ const osThreadAttr_t readButton_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_ADC_Init(void);
-static void MX_SPI1_Init(void);
 
 
 /* USER CODE BEGIN PFP */
@@ -108,6 +103,8 @@ void test_task(void);
 uint8_t test = 0;
 uint8_t flag=0;
 uint8_t buttonTaskCreated = 0;
+
+
 /* USER CODE END 0 */
 
 /**
@@ -139,21 +136,22 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
   MX_ADC_Init();
   MX_SPI1_Init();
+  MX_TIM2_Init();
+  
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start(&htim2);
   /* USER CODE END 2 */
 
   uint8_t nrTasks=3; //Numar taskuri
   SimpleTask tasks[] = {
-    {"readAdcVoltFunction", readAdcVoltFunction, 1},
-	{"displayVoltReadFunction", displayVoltReadFunction, 1},
-    {"readButtonFunction",readButtonFunction,1}
-  };//timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor ms a tuturor taskurilor.
+    {"readAdcVoltFunction", readAdcVoltFunction, 100},
+	{"displayVoltReadFunction", displayVoltReadFunction, 1570},
+    {"readButtonFunction",readButtonFunction,100}
+  };//timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor us a tuturor taskurilor.
 
-  uint32_t initTaskMaxTime=1570; //timp alocat task-ului de init OS(dupa initializarea OS-ului in sine). In ms.
+  uint32_t initTaskMaxTime=1570*1000; //timp alocat task-ului de init OS(dupa initializarea OS-ului in sine). In us.
   OS_Init(tasks, nrTasks, init_task,initTaskMaxTime);
   OS_Run();
 
@@ -215,203 +213,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief ADC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC_Init(void)
-{
-
-  /* USER CODE BEGIN ADC_Init 0 */
-
-  /* USER CODE END ADC_Init 0 */
-
-  ADC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN ADC_Init 1 */
-
-  /* USER CODE END ADC_Init 1 */
-
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-  */
-  hadc.Instance = ADC1;
-
-  hadc.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-  hadc.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
-  hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-  hadc.Init.LowPowerAutoWait = DISABLE;
-  hadc.Init.LowPowerAutoPowerOff = DISABLE;
-  hadc.Init.ContinuousConvMode = DISABLE;
-  hadc.Init.DiscontinuousConvMode = DISABLE;
-  hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc.Init.DMAContinuousRequests = DISABLE;
-  hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  if (HAL_ADC_Init(&hadc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel to be converted.
-  */
-  sConfig.Channel = ADC_CHANNEL_0;
-  sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-  sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel to be converted.
-  */
-  sConfig.Channel = ADC_CHANNEL_1;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC_Init 2 */
-
-  /* USER CODE END ADC_Init 2 */
-
-}
-
-/**
-  * @brief SPI1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI1_Init(void)
-{
-
-  /* USER CODE BEGIN SPI1_Init 0 */
-
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
-  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
-
-  /* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SPICD_GPIO_Port, SPICD_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, BL_Pin|SPIRST_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SPICS_GPIO_Port, SPICS_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : SPICD_Pin */
-  GPIO_InitStruct.Pin = SPICD_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SPICD_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : BL_Pin SPIRST_Pin */
-  GPIO_InitStruct.Pin = BL_Pin|SPIRST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : SPICS_Pin */
-  GPIO_InitStruct.Pin = SPICS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SPICS_GPIO_Port, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -506,30 +307,12 @@ void init_task(void) {
       			st7565_set_brightness(0);
 
 
-    /*st7565_clear_buffer(popup_buffer);
-    st7565_fillrect(popup_buffer, 0, 0, POPUP_W, POPUP_H, 0);
-    st7565_drawline(popup_buffer, 0, 0, POPUP_W, 0, 1);
-    st7565_drawline(popup_buffer, 0, 0, 0, POPUP_H, 1);
-    st7565_drawline(popup_buffer, POPUP_W, 0, POPUP_W, POPUP_H, 1);
-    st7565_drawline(popup_buffer, 0, POPUP_H, POPUP_W, POPUP_H, 1);
-    st7565_drawstring(popup_buffer, 2, 1, "Mode  ", fontMode);*/
+    
 }
 /* USER CODE END 4 */
 
 
-/*static void blit_popup(uint8_t *dest) {
-    for (uint8_t y = 0; y < POPUP_H; y++) {
-        uint8_t page = (POPUP_Y + y) / 8;
-        uint8_t bit = 7 - ((POPUP_Y + y) % 8);
-        for (uint8_t x = 0; x < POPUP_W; x++) {
-            uint8_t src_idx = x + (y / 8) * POPUP_W;
-            uint8_t src_bit = 7 - (y % 8);
-            if (popup_buffer[src_idx] & (1 << src_bit)) {
-                dest[(POPUP_X + x) + page * 128] |= (1 << bit);
-            }
-        }
-    }
-}*/
+
 
 /* USER CODE BEGIN Header_readAdcVoltFunction */
 /**
@@ -566,12 +349,11 @@ void readAdcVoltFunction(void)
 /* USER CODE END Header_displayVoltReadFunction */
 void displayVoltReadFunction(void)
 {
-    enum { DRAWING, SENDING_PAGE, WAITING };
+    enum { DRAWING, DRAWING_POPUP, SENDING_PAGE, WAITING };
     static uint8_t state = DRAWING;
     static uint8_t current_page = 0;
     static uint32_t last_frame_time = 0;
-    uint32_t now = HAL_GetTick();
-
+    uint32_t now = HAL_GetTick_us();
     switch(state) {
         case DRAWING:
             st7565_clear_buffer(buffer);
@@ -640,19 +422,25 @@ void displayVoltReadFunction(void)
             } else if(displayMode==100){
                 st7565_drawstring(buffer, 0, 0, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",fontMode);
             }
-            // Popup overlay: blit static part, then update number
-
-            /*if(showDisplayModeOverlay && (now - displayModeChangeTime) < 1250) {
-                blit_popup(buffer);
-                // Number position after 'Mode ' (6*5 pixels for 'Mode ', so offset by 30)
-                uint8_t number_x = POPUP_X + 2 + 30;
-                uint8_t number_y = POPUP_Y + 2;
-                st7565_fillrect(buffer, number_x, number_y, 6, 8, 0);
-                char num[2] = {displayMode + '0', 0};
-                st7565_drawstring(buffer, number_x, number_y / 8, num, fontMode);
+            state = DRAWING_POPUP;
+            break;
+        case DRAWING_POPUP:
+            if(showDisplayModeOverlay && (now - displayModeChangeTime) < 1250*1000) {
+                uint8_t rect_x = 80;
+                uint8_t rect_y = 45;
+                uint8_t rect_w = 47;
+                uint8_t rect_h = 18;
+                st7565_fillrect(buffer, rect_x, rect_y, rect_w, rect_h, 0);
+                st7565_drawline(buffer, rect_x, rect_y, rect_x + rect_w, rect_y, 1);
+                st7565_drawline(buffer, rect_x, rect_y, rect_x, rect_y + rect_h, 1);
+                st7565_drawline(buffer, rect_x + rect_w, rect_y, rect_x + rect_w, rect_y + rect_h, 1);
+                st7565_drawline(buffer, rect_x, rect_y + rect_h, rect_x + rect_w, rect_y + rect_h, 1);
+                char mode_text[20] = "Mode  ";
+                mode_text[5] = displayMode + '0';
+                st7565_drawstring(buffer, rect_x + 2, rect_y/8 + 1, mode_text, fontMode);
             } else {
                 showDisplayModeOverlay = 0;
-            }*/
+            }
             state = SENDING_PAGE;
             current_page = 0;
             break;
@@ -664,14 +452,22 @@ void displayVoltReadFunction(void)
             HAL_GPIO_WritePin(SPICD_GPIO_Port, ST7565_A0_PIN, 1);
             HAL_SPI_Transmit(&hspi1, &buffer[128 * current_page], 128, 6);
             current_page++;
+            /*CMD(ST7565_CMD_SET_PAGE | pagemap[current_page]);
+            CMD(ST7565_CMD_SET_COLUMN_LOWER | (0x0 & 0xf));
+            CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
+            CMD(ST7565_CMD_RMW);
+            HAL_GPIO_WritePin(SPICD_GPIO_Port, ST7565_A0_PIN, 1);
+            HAL_SPI_Transmit(&hspi1, &buffer[128 * current_page], 128, 6);
+            current_page++;*/
             if (current_page >= 8) {
+            	os_debug_drawing_time=now - last_frame_time;
                 state = WAITING;
-                last_frame_time = now;
             }
             break;
         case WAITING:
-            if (now - last_frame_time >= 42) {
+            if (now - last_frame_time >= 42*1000) {
                 state = DRAWING;
+                last_frame_time = now;
             }
             break;
     }
@@ -731,13 +527,13 @@ void readButtonFunction(void)
                     if(displayMode==0)displayMode=displayModeMax;
                     else displayMode--;
                     showDisplayModeOverlay = 1;
-                    displayModeChangeTime = HAL_GetTick();
+                    displayModeChangeTime = HAL_GetTick_us();
                 }
                 else if(buttonState == 2 && buttonStatePrev == 0) {
                     if(displayMode==displayModeMax)displayMode=0;
                     else displayMode++;
                     showDisplayModeOverlay = 1;
-                    displayModeChangeTime = HAL_GetTick();
+                    displayModeChangeTime = HAL_GetTick_us();
                 }
                 else if(buttonState == 3 && buttonStatePrev == 0) {//apas jos
                 	if(fontMode==0)fontMode=fontModeMax;

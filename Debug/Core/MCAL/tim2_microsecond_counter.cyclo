@@ -1,0 +1,2 @@
+../Core/MCAL/tim2_microsecond_counter.c:20:10:HAL_GetTick_us	1
+../Core/MCAL/tim2_microsecond_counter.c:25:6:HAL_Delay_us	2

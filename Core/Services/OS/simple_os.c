@@ -18,24 +18,24 @@ void OS_Run(void) {
     if (os_init_task) {
         uint32_t start = HAL_GetTick();
         os_init_task();
-        uint32_t elapsed = HAL_GetTick() - start;
+        uint32_t elapsed = HAL_GetTick_us() - start;
         if (elapsed > os_init_max_time_ms) {
             os_task_overrun_count[0]++;
             os_task_overrun_time=elapsed;
         } else {
-            while ((HAL_GetTick() - start) < os_init_max_time_ms) {}
+            while ((HAL_GetTick_us() - start) < os_init_max_time_ms) {}
         }
     }
     uint8_t i = 0;
     while (1) {
-        uint32_t start = HAL_GetTick();
+        uint32_t start = HAL_GetTick_us();
         os_tasks[i].task_func();
-        uint32_t elapsed = HAL_GetTick() - start;
+        uint32_t elapsed = HAL_GetTick_us() - start;
         if (elapsed > os_tasks[i].max_time_ms) {
             os_task_overrun_count[i+1]++;
             os_task_overrun_time=elapsed;
         } else {
-            while ((HAL_GetTick() - start) < os_tasks[i].max_time_ms) {}//bucla de asteptare pana la urmatorul task
+            while ((HAL_GetTick_us() - start) < os_tasks[i].max_time_ms) {}//bucla de asteptare pana la urmatorul task
         }
         i++;
         if (i >= os_num_tasks) i = 0;

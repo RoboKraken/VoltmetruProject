@@ -31,16 +31,16 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h \
- ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
- ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
- ../Core/Services/OS/simple_os.h ../Core/Applications/VoltInterpolation.c \
+ ../Core/MCAL/adc.h ../Core/Services/Main/main.h ../Core/MCAL/spi.h \
+ ../Core/MCAL/gpio.h ../Core/MCAL/tim.h \
+ ../Core/Applications/VoltInterpolation.c \
  ../Core/Applications/MAFilterButton.c \
  ../Core/Applications/MAFilterVolt.c ../Core/RTE/Rte.h \
  ../Core/Services/Display/lcd_st7565.h \
  ../Core/Services/Display/lcd_st7565_pinconf.h \
- ../Core/Services/Main/main.h ../Core/Services/Display/font.h \
+ ../Core/Services/Display/font.h \
  ../Core/Services/Display/lcd_st7565_pinconf.h \
- ../Core/Services/Display/font.h
+ ../Core/Services/Display/font.h ../Core/Services/OS/simple_os.h
 ../Core/Services/Main/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h:
 ../Core/MCAL/stm32f0xx_hal_conf.h:
@@ -73,16 +73,18 @@ Core/Services/Main/main.o: ../Core/Services/Main/main.c \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h:
-../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
-../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
-../Core/Services/OS/simple_os.h:
+../Core/MCAL/adc.h:
+../Core/Services/Main/main.h:
+../Core/MCAL/spi.h:
+../Core/MCAL/gpio.h:
+../Core/MCAL/tim.h:
 ../Core/Applications/VoltInterpolation.c:
 ../Core/Applications/MAFilterButton.c:
 ../Core/Applications/MAFilterVolt.c:
 ../Core/RTE/Rte.h:
 ../Core/Services/Display/lcd_st7565.h:
 ../Core/Services/Display/lcd_st7565_pinconf.h:
-../Core/Services/Main/main.h:
 ../Core/Services/Display/font.h:
 ../Core/Services/Display/lcd_st7565_pinconf.h:
 ../Core/Services/Display/font.h:
+../Core/Services/OS/simple_os.h:

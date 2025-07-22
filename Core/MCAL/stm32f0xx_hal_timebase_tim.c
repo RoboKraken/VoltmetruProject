@@ -38,6 +38,8 @@ TIM_HandleTypeDef        htim3;
   * @param  TickPriority: Tick interrupt priority.
   * @retval HAL status
   */
+
+
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
   RCC_ClkInitTypeDef    clkconfig;

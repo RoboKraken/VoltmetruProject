@@ -27,3 +27,4 @@ uint8_t showDisplayModeOverlay = 0;
 volatile uint16_t adc_buffer[2];
 uint32_t os_task_overrun_count[8] = {0};
 uint32_t os_task_overrun_time=0; //Cat de mult a durat taskul care a rulat prea mult
+uint32_t os_debug_drawing_time=0;
