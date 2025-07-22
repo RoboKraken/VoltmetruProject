@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
+//#include "cmsis_os.h" foloseste prea mult stack
 #include "simple_os.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -32,6 +32,11 @@
 #include "font.h"
 #include <stdio.h>
 #include <string.h>
+/*#define POPUP_W 47
+#define POPUP_H 18
+#define POPUP_X 80
+#define POPUP_Y 45
+static uint8_t popup_buffer[POPUP_W * ((POPUP_H + 7) / 8)];*/
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,26 +62,26 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* Definitions for readAdcVolt */
-osThreadId_t readAdcVoltHandle;
+/*osThreadId_t readAdcVoltHandle;
 const osThreadAttr_t readAdcVolt_attributes = {
   .name = "readAdcVolt",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
-};
+};*/
 /* Definitions for displayVoltRead */
-osThreadId_t displayVoltReadHandle;
+/*osThreadId_t displayVoltReadHandle;
 const osThreadAttr_t displayVoltRead_attributes = {
   .name = "displayVoltRead",
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
-};
+};*/
 /* Definitions for readButton */
-osThreadId_t readButtonHandle;
+/*osThreadId_t readButtonHandle;
 const osThreadAttr_t readButton_attributes = {
   .name = "readButton",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
-};
+};*/
 
 /* USER CODE BEGIN PV */
 
@@ -499,8 +504,32 @@ void init_task(void) {
       			  //Trimitem comanda sa desenam
 
       			st7565_set_brightness(0);
-  }
+
+
+    /*st7565_clear_buffer(popup_buffer);
+    st7565_fillrect(popup_buffer, 0, 0, POPUP_W, POPUP_H, 0);
+    st7565_drawline(popup_buffer, 0, 0, POPUP_W, 0, 1);
+    st7565_drawline(popup_buffer, 0, 0, 0, POPUP_H, 1);
+    st7565_drawline(popup_buffer, POPUP_W, 0, POPUP_W, POPUP_H, 1);
+    st7565_drawline(popup_buffer, 0, POPUP_H, POPUP_W, POPUP_H, 1);
+    st7565_drawstring(popup_buffer, 2, 1, "Mode  ", fontMode);*/
+}
 /* USER CODE END 4 */
+
+
+/*static void blit_popup(uint8_t *dest) {
+    for (uint8_t y = 0; y < POPUP_H; y++) {
+        uint8_t page = (POPUP_Y + y) / 8;
+        uint8_t bit = 7 - ((POPUP_Y + y) % 8);
+        for (uint8_t x = 0; x < POPUP_W; x++) {
+            uint8_t src_idx = x + (y / 8) * POPUP_W;
+            uint8_t src_bit = 7 - (y % 8);
+            if (popup_buffer[src_idx] & (1 << src_bit)) {
+                dest[(POPUP_X + x) + page * 128] |= (1 << bit);
+            }
+        }
+    }
+}*/
 
 /* USER CODE BEGIN Header_readAdcVoltFunction */
 /**
@@ -541,15 +570,13 @@ void displayVoltReadFunction(void)
     static uint8_t state = DRAWING;
     static uint8_t current_page = 0;
     static uint32_t last_frame_time = 0;
-    static uint8_t local_buffer[1024];
     uint32_t now = HAL_GetTick();
 
     switch(state) {
         case DRAWING:
-            // Draw everything into local_buffer
-            st7565_clear_buffer(local_buffer);
+            st7565_clear_buffer(buffer);
             if(displayMode==0){
-                st7565_drawstring(local_buffer,0,0,"Volt:",fontMode);
+                st7565_drawstring(buffer,0,0,"Volt:",fontMode);
                 char volt[100];
                 itoa(voltRead,volt,10);
                 if(voltRead<10){
@@ -572,9 +599,9 @@ void displayVoltReadFunction(void)
                     volt[2]=volt[1];
                     volt[1]='.';
                 }
-                st7565_drawstring(local_buffer,0,1,volt,fontMode);
+                st7565_drawstring(buffer,0,1,volt,fontMode);
             } else if(displayMode==1){
-                st7565_drawstring(local_buffer,30,2,"Volt Range",fontMode);
+                st7565_drawstring(buffer,30,2,"Volt Range",fontMode);
                 int bar_x0 = 5;
                 int bar_x1 = 121;
                 int bar_y0 = 30;
@@ -593,45 +620,39 @@ void displayVoltReadFunction(void)
                     int w = square_width + (i < remainder ? 1 : 0);
                     int threshold = (i + 1) * volt_step;
                     if(voltRead >= threshold) {
-                        st7565_fillrect(local_buffer, x, inner_y0, w, inner_y1 - inner_y0 + 1, 1);
+                        st7565_fillrect(buffer, x, inner_y0, w, inner_y1 - inner_y0 + 1, 1);
                     }
                     x += w;
                 }
-                st7565_drawline(local_buffer, bar_x0+1, bar_y0, bar_x1-1, bar_y0, 1);
-                st7565_drawline(local_buffer, bar_x0+1, bar_y1, bar_x1-1, bar_y1, 1);
-                st7565_drawline(local_buffer, bar_x0, bar_y0+1, bar_x0, bar_y1-1, 1);
-                st7565_drawline(local_buffer, bar_x1, bar_y0+1, bar_x1, bar_y1-1, 1);
-                st7565_setpixel(local_buffer, bar_x0 +1, bar_y0+1, 1);
-                st7565_setpixel(local_buffer, bar_x0 +1, bar_y1-1, 1);
-                st7565_setpixel(local_buffer, bar_x1 -1, bar_y0+1, 1);
-                st7565_setpixel(local_buffer, bar_x1 -1, bar_y1-1, 1);
-                st7565_drawstring(local_buffer, 0, 5, "0",fontMode);
-                st7565_drawstring(local_buffer, 20, 5, "0.8",fontMode);
-                st7565_drawstring(local_buffer, 45, 5, "1.6",fontMode);
-                st7565_drawstring(local_buffer, 75, 5, "2.5",fontMode);
-                st7565_drawstring(local_buffer, 108, 5, "3.3",fontMode);
+                st7565_drawline(buffer, bar_x0+1, bar_y0, bar_x1-1, bar_y0, 1);
+                st7565_drawline(buffer, bar_x0+1, bar_y1, bar_x1-1, bar_y1, 1);
+                st7565_drawline(buffer, bar_x0, bar_y0+1, bar_x0, bar_y1-1, 1);
+                st7565_drawline(buffer, bar_x1, bar_y0+1, bar_x1, bar_y1-1, 1);
+                st7565_setpixel(buffer, bar_x0 +1, bar_y0+1, 1);
+                st7565_setpixel(buffer, bar_x0 +1, bar_y1-1, 1);
+                st7565_setpixel(buffer, bar_x1 -1, bar_y0+1, 1);
+                st7565_setpixel(buffer, bar_x1 -1, bar_y1-1, 1);
+                st7565_drawstring(buffer, 0, 5, "0",fontMode);
+                st7565_drawstring(buffer, 20, 5, "0.8",fontMode);
+                st7565_drawstring(buffer, 45, 5, "1.6",fontMode);
+                st7565_drawstring(buffer, 75, 5, "2.5",fontMode);
+                st7565_drawstring(buffer, 108, 5, "3.3",fontMode);
             } else if(displayMode==100){
-                st7565_drawstring(local_buffer, 0, 0, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",fontMode);
+                st7565_drawstring(buffer, 0, 0, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",fontMode);
             }
-            if(showDisplayModeOverlay) {
-                if((now - displayModeChangeTime) < 1250) {
-                    uint8_t rect_x = 80;
-                    uint8_t rect_y = 45;
-                    uint8_t rect_w = 47;
-                    uint8_t rect_h = 18;
-                    st7565_fillrect(local_buffer, rect_x, rect_y, rect_w, rect_h, 0);
-                    st7565_drawline(local_buffer, rect_x, rect_y, rect_x + rect_w, rect_y, 1);
-                    st7565_drawline(local_buffer, rect_x, rect_y, rect_x, rect_y + rect_h, 1);
-                    st7565_drawline(local_buffer, rect_x + rect_w, rect_y, rect_x + rect_w, rect_y + rect_h, 1);
-                    st7565_drawline(local_buffer, rect_x, rect_y + rect_h, rect_x + rect_w, rect_y + rect_h, 1);
-                    uint8_t overlay_text[20]="Mode  ";
-                    overlay_text[5]=displayMode+'0';
-                    //sprintf(overlay_text, "Mode %d", displayMode); ineficient
-                    st7565_drawstring(local_buffer, rect_x + 2, rect_y/8 + 1, overlay_text, fontMode);
-                } else {
-                    showDisplayModeOverlay = 0;
-                }
-            }
+            // Popup overlay: blit static part, then update number
+
+            /*if(showDisplayModeOverlay && (now - displayModeChangeTime) < 1250) {
+                blit_popup(buffer);
+                // Number position after 'Mode ' (6*5 pixels for 'Mode ', so offset by 30)
+                uint8_t number_x = POPUP_X + 2 + 30;
+                uint8_t number_y = POPUP_Y + 2;
+                st7565_fillrect(buffer, number_x, number_y, 6, 8, 0);
+                char num[2] = {displayMode + '0', 0};
+                st7565_drawstring(buffer, number_x, number_y / 8, num, fontMode);
+            } else {
+                showDisplayModeOverlay = 0;
+            }*/
             state = SENDING_PAGE;
             current_page = 0;
             break;
@@ -641,7 +662,7 @@ void displayVoltReadFunction(void)
             CMD(ST7565_CMD_SET_COLUMN_UPPER | ((0x0 >> 4) & 0xf));
             CMD(ST7565_CMD_RMW);
             HAL_GPIO_WritePin(SPICD_GPIO_Port, ST7565_A0_PIN, 1);
-            HAL_SPI_Transmit(&hspi1, &local_buffer[128 * current_page], 128, 6);
+            HAL_SPI_Transmit(&hspi1, &buffer[128 * current_page], 128, 6);
             current_page++;
             if (current_page >= 8) {
                 state = WAITING;
