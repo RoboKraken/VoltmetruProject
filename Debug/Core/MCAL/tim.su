@@ -2,3 +2,4 @@
 ../Core/MCAL/tim.c:71:6:MX_TIM3_Init	32	static
 ../Core/MCAL/tim.c:111:6:HAL_TIM_Base_MspInit	24	static
 ../Core/MCAL/tim.c:138:6:HAL_TIM_Base_MspDeInit	16	static
+../Core/MCAL/tim.c:173:6:update_tim3_frequency	16	static

@@ -163,5 +163,23 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 }
 
 /* USER CODE BEGIN 1 */
+// Add frequency mode enum and ARR table
 
+
+FrequencyMode currentFreqMode = FREQ_50HZ;
+
+
+
+void update_tim3_frequency(FrequencyMode mode) {
+    __HAL_TIM_DISABLE(&htim3);
+    __HAL_TIM_SET_AUTORELOAD(&htim3, tim3_arr_values[mode]);
+    __HAL_TIM_SET_COUNTER(&htim3, 0);
+    __HAL_TIM_ENABLE(&htim3);
+}
 /* USER CODE END 1 */
+
+const uint32_t tim3_arr_values[FREQ_MODE_MAX] = {
+	1249, // 40Hz
+    999, // 50Hz
+	832   // 60Hz
+};

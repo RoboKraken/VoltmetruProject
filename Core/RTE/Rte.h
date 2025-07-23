@@ -31,4 +31,10 @@ extern uint8_t showDisplayModeOverlay;
 extern uint32_t os_task_overrun_count[8];
 extern uint32_t os_task_overrun_time;
 extern uint32_t os_debug_drawing_time;
+
+extern uint16_t oscilloscopeBuffer[ADC_BUFFER_SIZE/2];
+extern uint16_t oscilloscopeTrigger;
+extern uint16_t testOscilloscope;
+extern uint16_t oscilloscopeTriggerRaw;
+extern uint16_t oscilloscopeTriggerHyst;
 #endif /* RTE_RTE_H_ */
