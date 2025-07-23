@@ -96,6 +96,7 @@ void readButtonFunction(void);
 void oscilloscopeTriggerFunction(void);
 void init_task(void);
 void test_task(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -104,6 +105,17 @@ uint8_t test = 0;
 uint8_t flag = 0;
 uint8_t buttonTaskCreated = 0;
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	if (active_buffer_id == 0) {
+	        HAL_ADC_Stop_DMA(hadc);
+	        HAL_ADC_Start_DMA(hadc, (uint32_t*)adc_buffer1, ADC_BUFFER_SIZE);
+	        active_buffer_id = 1;
+	    } else {
+	        HAL_ADC_Stop_DMA(hadc);
+	        HAL_ADC_Start_DMA(hadc, (uint32_t*)adc_buffer0, ADC_BUFFER_SIZE);
+	        active_buffer_id = 0;
+	    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -143,7 +155,9 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start(&htim2);
 	HAL_TIM_Base_Start(&htim3);
-	HAL_ADC_Start_DMA(&hadc, (uint32_t*) adc_buffer, ADC_BUFFER_SIZE);
+
+	//HAL_ADC_ConvCpltCallback();
+	HAL_ADC_Start_DMA(&hadc, (uint32_t*) adc_buffer0, ADC_BUFFER_SIZE);
 	// Set TIM3 to current frequency mode
 	update_tim3_frequency(currentFreqMode);
 	/* USER CODE END 2 */
@@ -328,7 +342,10 @@ void readAdcVoltFunction(void) {
 
 	 HAL_ADC_Stop(&hadc);*/
 
-	voltReadRaw = adc_buffer[255];
+	if(active_buffer_id==0)
+	voltReadRaw = adc_buffer1[255];
+	else
+		voltReadRaw = adc_buffer0[255];
 	voltRead = filterVolt(interpolation(voltReadRaw));
 
 	/* USER CODE END 5 */
@@ -564,7 +581,10 @@ void readButtonFunction(void) {
 	 buttonReadRaw = 666;
 	 }
 	 HAL_ADC_Stop(&hadc);*/
-	buttonReadRaw = adc_buffer[254];
+	if(active_buffer_id==0)
+		buttonReadRaw = adc_buffer1[254];
+	if(active_buffer_id==1)
+			buttonReadRaw = adc_buffer0[254];
 	buttonRead[0] = buttonRead[1];
 	buttonRead[1] = filterButton(interpolation(buttonReadRaw));
 
@@ -677,9 +697,14 @@ void oscilloscopeTriggerFunction(void) {
     uint8_t trigger_found = 0;
     uint16_t trigger_index = 3;
 
+    if(active_buffer_id==0)
     for (uint16_t i = 0; i < 256; i++) {
-        oscilloscopeBuffer[i] = adc_buffer[i];
+        oscilloscopeBuffer[i] = adc_buffer1[i];
     }
+    else
+    	for (uint16_t i = 0; i < 256; i++) {
+    	        oscilloscopeBuffer[i] = adc_buffer0[i];
+    	    }
 
     for (uint16_t i = 2 * HYST_WINDOW + 1; i < 256; i += 2) {
         uint16_t curr_val = oscilloscopeBuffer[i];

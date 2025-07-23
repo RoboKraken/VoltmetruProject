@@ -15,7 +15,9 @@ extern uint16_t voltRead;
 extern uint16_t buttonRead[2];
 extern uint8_t displayMode;
 extern uint8_t displayModeMax;
-extern volatile uint16_t adc_buffer[ADC_BUFFER_SIZE];
+extern volatile uint16_t adc_buffer0[];
+extern volatile uint16_t adc_buffer1[];
+extern volatile uint8_t active_buffer_id;
 
 extern uint8_t fontMode;
 extern uint8_t fontModeMax;
@@ -32,7 +34,7 @@ extern uint32_t os_task_overrun_count[8];
 extern uint32_t os_task_overrun_time;
 extern uint32_t os_debug_drawing_time;
 
-extern uint16_t oscilloscopeBuffer[ADC_BUFFER_SIZE/2];
+extern uint16_t oscilloscopeBuffer[];
 extern uint16_t oscilloscopeTrigger;
 extern uint16_t testOscilloscope;
 extern uint16_t oscilloscopeTriggerRaw;

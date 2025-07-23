@@ -5,7 +5,7 @@
  *      Author: Robert
  */
 #include "main.h"
-#define ADC_BUFFER_SIZE 256
+#include "Rte.h"
 
 uint16_t voltReadRaw=1;
 uint16_t buttonReadRaw=1;
@@ -28,7 +28,9 @@ uint32_t os_task_overrun_count[8] = {0};
 uint32_t os_task_overrun_time=0; //Cat de mult a durat taskul care a rulat prea mult
 uint32_t os_debug_drawing_time=0;
 
-volatile uint16_t adc_buffer[ADC_BUFFER_SIZE];
+volatile uint16_t adc_buffer0[ADC_BUFFER_SIZE];
+volatile uint16_t adc_buffer1[ADC_BUFFER_SIZE];
+volatile uint8_t active_buffer_id = 0;
 uint16_t oscilloscopeBuffer[ADC_BUFFER_SIZE];
 uint16_t oscilloscopeTrigger=200;
 uint16_t testOscilloscope=0;
