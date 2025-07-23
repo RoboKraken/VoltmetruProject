@@ -152,8 +152,7 @@ int main(void) {
 	SimpleTask tasks[] = { { "readAdcVoltFunction", readAdcVoltFunction, 100 },
 			{ "displayVoltReadFunction", displayVoltReadFunction, 1570 }, {
 					"readButtonFunction", readButtonFunction, 100 }, {
-					"oscilloscopeTriggerFunction", oscilloscopeTriggerFunction,
-					100 } }; //timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor us a tuturor taskurilor.
+					"oscilloscopeTriggerFunction", oscilloscopeTriggerFunction,100 } }; //timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor us a tuturor taskurilor.
 
 	uint32_t initTaskMaxTime = 1570 * 1000; //timp alocat task-ului de init OS(dupa initializarea OS-ului in sine). In us.
 	OS_Init(tasks, nrTasks, init_task, initTaskMaxTime);
@@ -415,14 +414,16 @@ void displayVoltReadFunction(void) {
 			st7565_drawstring(buffer, 75, 5, "2.5", fontMode);
 			st7565_drawstring(buffer, 108, 5, "3.3", fontMode);
 		} else if (displayMode == 2) { //Display osciloscop
+			uint16_t idx = oscilloscopeTriggerIndex;
 			for (uint8_t x = 0; x < 128; x++) {
-				uint16_t value = oscilloscopeBuffer[x];
+				uint16_t value = oscilloscopeBuffer[idx];
 				uint8_t y = 63 - (value * 63 / 4095);
-				if (y < 0)
-					y = 0;
 				if (y > 63)
 					y = 63;
 				st7565_setpixel(buffer, x, y, 1);
+				idx += 2;
+				if (idx >= 256)
+					idx = 1;
 			}
 			// Trigger si frecventa in partea de sus
 			uint8_t freq_str[8] = { 0 };
@@ -461,12 +462,10 @@ void displayVoltReadFunction(void) {
 
 			//Sectiune gradatii
 			// la 50Hz cu 10 gradatii si 128 pixeli, avem 4ms pe axa temporala per gradatie
-			// Draw 10 ticks on the x axis (bottom)
-			// Draw '0' at bottom left
 			st7565_drawstring(buffer, 2, 7, "0", fontMode);
-			// Draw '20' at bottom middle
+			
 			st7565_drawstring(buffer, 58, 7, "20", fontMode);
-			// Draw 'ms' at bottom right
+			
 			st7565_drawstring(buffer, 112, 7, "ms", fontMode);
 			uint8_t num_ticks = 10;
 			uint8_t x0 = 0;
@@ -474,7 +473,6 @@ void displayVoltReadFunction(void) {
 			uint8_t y_bottom = 63;
 			for (uint8_t t = 0; t < num_ticks; t++) {
 				uint8_t x_tick = x0 + (x1 - x0) * t / (num_ticks - 1);
-				// Draw a small vertical tick (3 pixels high)
 				for (uint8_t dy = 0; dy < 3; dy++) {
 					st7565_setpixel(buffer, x_tick, y_bottom - dy, 1);
 				}
@@ -675,42 +673,30 @@ void readButtonFunction(void) {
 
 void oscilloscopeTriggerFunction(void) {
     const uint8_t SCOPE_SIZE = 128;
-    const uint8_t HYST_WINDOW = 12;
+    const uint8_t HYST_WINDOW = 4;
     uint8_t trigger_found = 0;
     uint16_t trigger_index = 3;
 
-    for (uint16_t i = 2 * HYST_WINDOW+1; i < 256; i += 2) {
-        uint16_t curr_val = adc_buffer[i];
+    for (uint16_t i = 0; i < 256; i++) {
+        oscilloscopeBuffer[i] = adc_buffer[i];
+    }
+
+    for (uint16_t i = 2 * HYST_WINDOW + 1; i < 256; i += 2) {
+        uint16_t curr_val = oscilloscopeBuffer[i];
         if (curr_val > (oscilloscopeTriggerRaw + oscilloscopeTriggerHyst)) {
             uint8_t below_count = 0;
             for (uint8_t w = 1; w <= HYST_WINDOW; w++) {
-                if (adc_buffer[i - 2 * w] < (oscilloscopeTriggerRaw - oscilloscopeTriggerHyst)) {
+                if (oscilloscopeBuffer[i - 2 * w] < (oscilloscopeTriggerRaw - oscilloscopeTriggerHyst)) {
                     below_count++;
                 }
             }
-            if (below_count >= HYST_WINDOW/2) {
-            	//HAL_ADC_Stop_DMA(&hadc);
+            if (below_count >= HYST_WINDOW /2) {
                 trigger_found = 1;
                 trigger_index = i;
+                oscilloscopeTriggerIndex = trigger_index;
                 break;
             }
         }
-    }
-
-    if (trigger_found) {
-        uint16_t adc_idx = trigger_index;
-        for (uint8_t m = 0; m < SCOPE_SIZE; m++) {
-            oscilloscopeBuffer[m] = adc_buffer[adc_idx];
-            adc_idx += 2;
-            if (adc_idx >= 256)
-                adc_idx = 1;
-        }
-        //HAL_ADC_Start_DMA(&hadc, (uint32_t*) adc_buffer, ADC_BUFFER_SIZE);
-    }
-    else {
-        /*for (uint8_t m = 0, adc_idx = 1; m < SCOPE_SIZE && adc_idx < 256; m++, adc_idx += 2) {
-            oscilloscopeBuffer[m] = adc_buffer[adc_idx];
-        }*/
     }
 }
 /**

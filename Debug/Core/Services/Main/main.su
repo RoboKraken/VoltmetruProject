@@ -6,7 +6,7 @@
 ../Core/Services/Main/main.c:220:6:init_task	56	static
 ../Core/Services/Main/main.c:319:6:readAdcVoltFunction	8	static
 ../Core/Services/Main/main.c:345:6:displayVoltReadFunction	272	static
-../Core/Services/Main/main.c:554:6:readButtonFunction	16	static
-../Core/Services/Main/main.c:676:6:oscilloscopeTriggerFunction	24	static
-../Core/Services/Main/main.c:724:6:HAL_TIM_PeriodElapsedCallback	16	static
-../Core/Services/Main/main.c:740:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Services/Main/main.c:553:6:readButtonFunction	16	static
+../Core/Services/Main/main.c:675:6:oscilloscopeTriggerFunction	24	static
+../Core/Services/Main/main.c:711:6:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Services/Main/main.c:727:6:Error_Handler	8	static,ignoring_inline_asm

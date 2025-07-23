@@ -37,4 +37,5 @@ extern uint16_t oscilloscopeTrigger;
 extern uint16_t testOscilloscope;
 extern uint16_t oscilloscopeTriggerRaw;
 extern uint16_t oscilloscopeTriggerHyst;
+extern uint16_t oscilloscopeTriggerIndex;
 #endif /* RTE_RTE_H_ */

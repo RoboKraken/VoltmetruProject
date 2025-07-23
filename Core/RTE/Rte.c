@@ -29,8 +29,9 @@ uint32_t os_task_overrun_time=0; //Cat de mult a durat taskul care a rulat prea 
 uint32_t os_debug_drawing_time=0;
 
 volatile uint16_t adc_buffer[ADC_BUFFER_SIZE];
-uint16_t oscilloscopeBuffer[ADC_BUFFER_SIZE/2];
+uint16_t oscilloscopeBuffer[ADC_BUFFER_SIZE];
 uint16_t oscilloscopeTrigger=200;
 uint16_t testOscilloscope=0;
 uint16_t oscilloscopeTriggerRaw = 2048; 
 uint16_t oscilloscopeTriggerHyst = 10;
+uint16_t oscilloscopeTriggerIndex=0;

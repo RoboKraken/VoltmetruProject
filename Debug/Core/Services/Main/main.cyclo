@@ -5,8 +5,8 @@
 ../Core/Services/Main/main.c:178:6:SystemClock_Config	4
 ../Core/Services/Main/main.c:220:6:init_task	14
 ../Core/Services/Main/main.c:319:6:readAdcVoltFunction	1
-../Core/Services/Main/main.c:345:6:displayVoltReadFunction	29
-../Core/Services/Main/main.c:554:6:readButtonFunction	35
-../Core/Services/Main/main.c:676:6:oscilloscopeTriggerFunction	9
-../Core/Services/Main/main.c:724:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Services/Main/main.c:740:6:Error_Handler	1
+../Core/Services/Main/main.c:345:6:displayVoltReadFunction	30
+../Core/Services/Main/main.c:553:6:readButtonFunction	35
+../Core/Services/Main/main.c:675:6:oscilloscopeTriggerFunction	7
+../Core/Services/Main/main.c:711:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Services/Main/main.c:727:6:Error_Handler	1
