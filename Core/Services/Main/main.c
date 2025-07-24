@@ -105,16 +105,18 @@ uint8_t test = 0;
 uint8_t flag = 0;
 uint8_t buttonTaskCreated = 0;
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	if (active_buffer_id == 0) {
-	        HAL_ADC_Stop_DMA(hadc);
-	        HAL_ADC_Start_DMA(hadc, (uint32_t*)adc_buffer1, ADC_BUFFER_SIZE);
-	        active_buffer_id = 1;
-	    } else {
-	        HAL_ADC_Stop_DMA(hadc);
-	        HAL_ADC_Start_DMA(hadc, (uint32_t*)adc_buffer0, ADC_BUFFER_SIZE);
-	        active_buffer_id = 0;
-	    }
+		HAL_ADC_Stop_DMA(hadc);
+		HAL_ADC_Start_DMA(hadc, (uint32_t*) adc_buffer1, ADC_BUFFER_SIZE);
+		active_buffer_id = 1;
+		adc_buffer_ready = 1;
+	} else {
+		HAL_ADC_Stop_DMA(hadc);
+		HAL_ADC_Start_DMA(hadc, (uint32_t*) adc_buffer0, ADC_BUFFER_SIZE);
+		active_buffer_id = 0;
+		adc_buffer_ready = 1;
+	}
 }
 /* USER CODE END 0 */
 
@@ -166,7 +168,8 @@ int main(void) {
 	SimpleTask tasks[] = { { "readAdcVoltFunction", readAdcVoltFunction, 100 },
 			{ "displayVoltReadFunction", displayVoltReadFunction, 1570 }, {
 					"readButtonFunction", readButtonFunction, 100 }, {
-					"oscilloscopeTriggerFunction", oscilloscopeTriggerFunction,100 } }; //timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor us a tuturor taskurilor.
+					"oscilloscopeTriggerFunction", oscilloscopeTriggerFunction,
+					100 } }; //timpul total pana vom intra din nou intr-o functie, ex readAdcVoltFunction, e suma tuturor us a tuturor taskurilor.
 
 	uint32_t initTaskMaxTime = 1570 * 1000; //timp alocat task-ului de init OS(dupa initializarea OS-ului in sine). In us.
 	OS_Init(tasks, nrTasks, init_task, initTaskMaxTime);
@@ -342,8 +345,8 @@ void readAdcVoltFunction(void) {
 
 	 HAL_ADC_Stop(&hadc);*/
 
-	if(active_buffer_id==0)
-	voltReadRaw = adc_buffer1[255];
+	if (active_buffer_id == 0)
+		voltReadRaw = adc_buffer1[255];
 	else
 		voltReadRaw = adc_buffer0[255];
 	voltRead = filterVolt(interpolation(voltReadRaw));
@@ -369,136 +372,320 @@ void displayVoltReadFunction(void) {
 	switch (state) {
 	case DRAWING:
 		st7565_clear_buffer(buffer);
-		if (displayMode == 0) {
-			st7565_drawstring(buffer, 0, 0, "Volt:", fontMode);
-			char volt[100];
-			itoa(voltRead, volt, 10);
-			if (voltRead < 10) {
-				volt[4] = '\0';
-				volt[3] = volt[0];
-				volt[2] = '0';
-				volt[1] = '.';
-				volt[0] = '0';
-			} else if (voltRead >= 10 && voltRead < 100) {
-				volt[4] = '\0';
-				volt[3] = volt[1];
-				volt[2] = volt[0];
-				volt[1] = '.';
-				volt[0] = '0';
-			} else {
-				volt[4] = '\0';
-				volt[3] = volt[2];
-				volt[2] = volt[1];
-				volt[1] = '.';
+		char freq_val[8];
+		switch (currentFreqMode) {
+		case FREQ_1HZ:
+			strcpy(freq_val, "1Hz");
+			break;
+		case FREQ_10HZ:
+			strcpy(freq_val, "10Hz");
+			break;
+		case FREQ_20HZ:
+			strcpy(freq_val, "20Hz");
+			break;
+		case FREQ_50HZ:
+			strcpy(freq_val, "50Hz");
+			break;
+		case FREQ_100HZ:
+			strcpy(freq_val, "100Hz");
+			break;
+		case FREQ_200HZ:
+			strcpy(freq_val, "200Hz");
+			break;
+		case FREQ_500HZ:
+			strcpy(freq_val, "500Hz");
+			break;
+		case FREQ_1KHZ:
+			strcpy(freq_val, "1kHz");
+			break;
+		case FREQ_2KHZ:
+			strcpy(freq_val, "2kHz");
+			break;
+		case FREQ_5KHZ:
+			strcpy(freq_val, "5kHz");
+			break;
+		case FREQ_10KHZ:
+			strcpy(freq_val, "10kHz");
+			break;
+		case FREQ_20KHZ:
+			strcpy(freq_val, "20kHz");
+			break;
+		case FREQ_50KHZ:
+			strcpy(freq_val, "50kHz");
+			break;
+		default:
+			strcpy(freq_val, "?");
+			break;
+		}
+		if (menu_active == 1) {
+			st7565_clear_buffer(buffer);
+			st7565_drawstring(buffer, 10, 0, "MENU", fontMode);
+			if (displayMode < 2) {
+				st7565_drawstring(buffer, 10, 2, "Font select", fontMode);
+				st7565_drawstring(buffer, 10, 3, "Exit menu", fontMode);
+
+				char font_val[8];
+				itoa(fontMode, font_val, 10);
+				st7565_drawstring(buffer, 90, 2, font_val, fontMode);
 			}
-			st7565_drawstring(buffer, 0, 1, volt, fontMode);
-		} else if (displayMode == 1) {
-			st7565_drawstring(buffer, 30, 2, "Volt Range", fontMode);
-			int bar_x0 = 5;
-			int bar_x1 = 121;
-			int bar_y0 = 30;
-			int bar_y1 = 37;
-			int squares = 10;
-			int inner_x0 = bar_x0 + 1;
-			int inner_x1 = bar_x1 - 1;
-			int inner_y0 = bar_y0 + 1;
-			int inner_y1 = bar_y1 - 1;
-			int inner_width = inner_x1 - inner_x0 + 1;
-			int square_width = inner_width / squares;
-			int remainder = inner_width - square_width * squares;
-			int volt_step = 330 / squares;
-			int x = inner_x0;
-			for (int i = 0; i < squares; i++) {
-				int w = square_width + (i < remainder ? 1 : 0);
-				int threshold = (i + 1) * volt_step;
-				if (voltRead >= threshold) {
-					st7565_fillrect(buffer, x, inner_y0, w,
-							inner_y1 - inner_y0 + 1, 1);
+			if (displayMode == 2) {
+				st7565_drawstring(buffer, 10, 2, "Trigger", fontMode);
+				st7565_drawstring(buffer, 10, 3, "Trigger level", fontMode);
+				st7565_drawstring(buffer, 10, 4, "Sample freq", fontMode);
+				st7565_drawstring(buffer, 10, 5, "Exit menu", fontMode);
+
+				st7565_drawstring(buffer, 90, 2, trigger_active ? "ON" : "OFF",fontMode);
+
+				char trig_val[8];
+				itoa(oscilloscopeTrigger, trig_val, 10);
+				st7565_drawstring(buffer, 90, 3, trig_val, fontMode);
+
+				st7565_drawstring(buffer, 90, 4, freq_val, fontMode);
+			}
+
+			uint8_t highlight_line =
+					(displayMode < 2) ? menu_select + 2 : menu_select + 2;
+			st7565_drawrect(buffer, 8, 8 * highlight_line-1, 120, 9, 1);
+		} else {
+			if (displayMode == 0) {
+				st7565_drawstring(buffer, 0, 0, "Volt:", fontMode);
+				char volt[100];
+				itoa(voltRead, volt, 10);
+				if (voltRead < 10) {
+					volt[4] = '\0';
+					volt[3] = volt[0];
+					volt[2] = '0';
+					volt[1] = '.';
+					volt[0] = '0';
+				} else if (voltRead >= 10 && voltRead < 100) {
+					volt[4] = '\0';
+					volt[3] = volt[1];
+					volt[2] = volt[0];
+					volt[1] = '.';
+					volt[0] = '0';
+				} else {
+					volt[4] = '\0';
+					volt[3] = volt[2];
+					volt[2] = volt[1];
+					volt[1] = '.';
 				}
-				x += w;
-			}
-			st7565_drawline(buffer, bar_x0 + 1, bar_y0, bar_x1 - 1, bar_y0, 1);
-			st7565_drawline(buffer, bar_x0 + 1, bar_y1, bar_x1 - 1, bar_y1, 1);
-			st7565_drawline(buffer, bar_x0, bar_y0 + 1, bar_x0, bar_y1 - 1, 1);
-			st7565_drawline(buffer, bar_x1, bar_y0 + 1, bar_x1, bar_y1 - 1, 1);
-			st7565_setpixel(buffer, bar_x0 + 1, bar_y0 + 1, 1);
-			st7565_setpixel(buffer, bar_x0 + 1, bar_y1 - 1, 1);
-			st7565_setpixel(buffer, bar_x1 - 1, bar_y0 + 1, 1);
-			st7565_setpixel(buffer, bar_x1 - 1, bar_y1 - 1, 1);
-			st7565_drawstring(buffer, 0, 5, "0", fontMode);
-			st7565_drawstring(buffer, 20, 5, "0.8", fontMode);
-			st7565_drawstring(buffer, 45, 5, "1.6", fontMode);
-			st7565_drawstring(buffer, 75, 5, "2.5", fontMode);
-			st7565_drawstring(buffer, 108, 5, "3.3", fontMode);
-		} else if (displayMode == 2) { //Display osciloscop
-			uint16_t idx = oscilloscopeTriggerIndex;
-			for (uint8_t x = 0; x < 128; x++) {
-				uint16_t value = oscilloscopeBuffer[idx];
-				uint8_t y = 63 - (value * 63 / 4095);
-				if (y > 63)
-					y = 63;
-				st7565_setpixel(buffer, x, y, 1);
-				idx += 2;
-				if (idx >= 256)
-					idx = 1;
-			}
-			// Trigger si frecventa in partea de sus
-			uint8_t freq_str[8] = { 0 };
-			uint8_t trig_str[15] = "Trig:    ";
-			freq_str[2] = 'H';
-			freq_str[3] = 'z';
-			freq_str[4] = '\0';
-			switch (currentFreqMode) {
-			case FREQ_40HZ:
-				freq_str[0] = '4';
-				freq_str[1] = '0';
-				break;
-			case FREQ_50HZ:
-				freq_str[0] = '5';
-				freq_str[1] = '0';
-				break;
-			case FREQ_60HZ:
-				freq_str[0] = '6';
-				freq_str[1] = '0';
-				break;
-			default:
-				freq_str[0] = '?';
-				freq_str[1] = '?';
-				break;
-			}
-
-			uint16_t trig = oscilloscopeTrigger;
-			trig_str[5] = (trig / 100) % 10 + '0';
-			trig_str[6] = ',';
-			trig_str[7] = (trig / 10) % 10 + '0';
-			trig_str[8] = (trig % 10) + '0';
-			trig_str[9] = 'V';
-			trig_str[10] = '\0';
-			st7565_drawstring(buffer, 90, 0, freq_str, fontMode);
-			st7565_drawstring(buffer, 5, 0, trig_str, fontMode);
-
-			//Sectiune gradatii
-			// la 50Hz cu 10 gradatii si 128 pixeli, avem 4ms pe axa temporala per gradatie
-			st7565_drawstring(buffer, 2, 7, "0", fontMode);
-			
-			st7565_drawstring(buffer, 58, 7, "20", fontMode);
-			
-			st7565_drawstring(buffer, 112, 7, "ms", fontMode);
-			uint8_t num_ticks = 10;
-			uint8_t x0 = 0;
-			uint8_t x1 = 127;
-			uint8_t y_bottom = 63;
-			for (uint8_t t = 0; t < num_ticks; t++) {
-				uint8_t x_tick = x0 + (x1 - x0) * t / (num_ticks - 1);
-				for (uint8_t dy = 0; dy < 3; dy++) {
-					st7565_setpixel(buffer, x_tick, y_bottom - dy, 1);
+				st7565_drawstring(buffer, 0, 1, volt, fontMode);
+			} else if (displayMode == 1) {
+				st7565_drawstring(buffer, 30, 2, "Volt Range", fontMode);
+				int bar_x0 = 5;
+				int bar_x1 = 121;
+				int bar_y0 = 30;
+				int bar_y1 = 37;
+				int squares = 10;
+				int inner_x0 = bar_x0 + 1;
+				int inner_x1 = bar_x1 - 1;
+				int inner_y0 = bar_y0 + 1;
+				int inner_y1 = bar_y1 - 1;
+				int inner_width = inner_x1 - inner_x0 + 1;
+				int square_width = inner_width / squares;
+				int remainder = inner_width - square_width * squares;
+				int volt_step = 330 / squares;
+				int x = inner_x0;
+				for (int i = 0; i < squares; i++) {
+					int w = square_width + (i < remainder ? 1 : 0);
+					int threshold = (i + 1) * volt_step;
+					if (voltRead >= threshold) {
+						st7565_fillrect(buffer, x, inner_y0, w,
+								inner_y1 - inner_y0 + 1, 1);
+					}
+					x += w;
 				}
-			}
+				st7565_drawline(buffer, bar_x0 + 1, bar_y0, bar_x1 - 1, bar_y0,
+						1);
+				st7565_drawline(buffer, bar_x0 + 1, bar_y1, bar_x1 - 1, bar_y1,
+						1);
+				st7565_drawline(buffer, bar_x0, bar_y0 + 1, bar_x0, bar_y1 - 1,
+						1);
+				st7565_drawline(buffer, bar_x1, bar_y0 + 1, bar_x1, bar_y1 - 1,
+						1);
+				st7565_setpixel(buffer, bar_x0 + 1, bar_y0 + 1, 1);
+				st7565_setpixel(buffer, bar_x0 + 1, bar_y1 - 1, 1);
+				st7565_setpixel(buffer, bar_x1 - 1, bar_y0 + 1, 1);
+				st7565_setpixel(buffer, bar_x1 - 1, bar_y1 - 1, 1);
+				st7565_drawstring(buffer, 0, 5, "0", fontMode);
+				st7565_drawstring(buffer, 20, 5, "0.8", fontMode);
+				st7565_drawstring(buffer, 45, 5, "1.6", fontMode);
+				st7565_drawstring(buffer, 75, 5, "2.5", fontMode);
+				st7565_drawstring(buffer, 108, 5, "3.3", fontMode);
+			} else if (displayMode == 2) { //Display osciloscop
+				uint16_t idx = oscilloscopeTriggerIndex;
+				//mod punct
+				/*for (uint8_t x = 0; x < 128; x++) {
+				 uint16_t value = oscilloscopeBuffer[idx];
+				 uint8_t y = 63 - (value * 63 / 4095);
+				 if (y > 63)
+				 y = 63;
+				 st7565_setpixel(buffer, x, y, 1);
+				 idx += 2;
+				 if (idx >= 512){
+				 idx = 1;
+				 //break;
+				 }
+				 }*/
 
-		} else if (displayMode == 100) { //Display debug font
-			st7565_drawstring(buffer, 0, 0,
-					" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",
-					fontMode);
+				//mod linie
+				if (trigger_active) {
+					if (trigger_found) {
+						uint8_t prev_x = 0;
+						uint8_t prev_y = 63
+								- (oscilloscopeBuffer[idx] * 63 / 4095);
+						if (prev_y > 63)
+							prev_y = 63;
+						for (uint8_t x = 1; x < 128; x++) {
+							idx += 2;
+							if (idx >= 512)
+								idx = 1;
+							uint16_t value = oscilloscopeBuffer[idx];
+							uint8_t y = 63 - (value * 63 / 4095);
+							if (y > 63)
+								y = 63;
+							st7565_drawline_complex(buffer, prev_x, prev_y, x,
+									y, 1);
+							prev_x = x;
+							prev_y = y;
+						}
+					}
+				} else {
+					uint8_t prev_x = 0;
+					uint8_t prev_y = 63 - (oscilloscopeBuffer[idx] * 63 / 4095);
+					if (prev_y > 63)
+						prev_y = 63;
+					for (uint8_t x = 1; x < 128; x++) {
+						idx += 2;
+						if (idx >= 512)
+							idx = 1;
+						uint16_t value = oscilloscopeBuffer[idx];
+						uint8_t y = 63 - (value * 63 / 4095);
+						if (y > 63)
+							y = 63;
+						st7565_drawline_complex(buffer, prev_x, prev_y, x, y,
+								1);
+						prev_x = x;
+						prev_y = y;
+					}
+				}
+				//Trigger si frecventa in partea de sus
+				uint8_t freq_str[8] = "    Hz";
+				uint8_t trig_str[15] = "Trig:    ";
+				switch (currentFreqMode) {
+				case FREQ_1HZ:
+					freq_str[0] = '1';
+					break;
+				case FREQ_10HZ:
+					freq_str[0] = '1';
+					freq_str[1] = '0';
+					break;
+				case FREQ_20HZ:
+					freq_str[0] = '2';
+					freq_str[1] = '0';
+					break;
+				case FREQ_50HZ:
+					freq_str[0] = '5';
+					freq_str[1] = '0';
+					break;
+				case FREQ_100HZ:
+					freq_str[0] = '1';
+					freq_str[1] = '0';
+					freq_str[2] = '0';
+					break;
+				case FREQ_200HZ:
+					freq_str[0] = '2';
+					freq_str[1] = '0';
+					freq_str[2] = '0';
+					break;
+				case FREQ_500HZ:
+					freq_str[0] = '5';
+					freq_str[1] = '0';
+					freq_str[2] = '0';
+					break;
+				case FREQ_1KHZ:
+					freq_str[0] = '1';
+					freq_str[1] = ' ';
+					freq_str[2] = ' ';
+					freq_str[3] = 'K';
+					break;
+				case FREQ_2KHZ:
+					freq_str[0] = '2';
+					freq_str[1] = ' ';
+					freq_str[2] = ' ';
+					freq_str[3] = 'K';
+					break;
+				case FREQ_5KHZ:
+					freq_str[0] = '5';
+					freq_str[1] = ' ';
+					freq_str[2] = ' ';
+					freq_str[3] = 'K';
+					break;
+				case FREQ_10KHZ:
+					freq_str[0] = '1';
+					freq_str[1] = '0';
+					freq_str[2] = ' ';
+					freq_str[3] = 'K';
+					break;
+				case FREQ_20KHZ:
+					freq_str[0] = '2';
+					freq_str[1] = '0';
+					freq_str[2] = ' ';
+					freq_str[3] = 'K';
+					break;
+				case FREQ_50KHZ:
+					freq_str[0] = '5';
+					freq_str[1] = '0';
+					freq_str[2] = ' ';
+					freq_str[3] = 'K';
+					break;
+				default:
+					freq_str[0] = '?';
+					freq_str[1] = '?';
+					break;
+				}
+				//Test Trigger sus stanga
+				if (trigger_active) {
+					uint16_t trig = oscilloscopeTrigger;
+					trig_str[5] = (trig / 100) % 10 + '0';
+					trig_str[6] = ',';
+					trig_str[7] = (trig / 10) % 10 + '0';
+					trig_str[8] = (trig % 10) + '0';
+					trig_str[9] = 'V';
+					trig_str[10] = '\0';
+				} else {
+					trig_str[5] = 'N';
+					trig_str[6] = 'O';
+					trig_str[7] = '\0';
+
+				}
+				st7565_drawstring(buffer, 90, 0, freq_str, fontMode);
+				st7565_drawstring(buffer, 5, 0, trig_str, fontMode);
+				//Sectiune gradatii
+				// la 50Hz cu 10 gradatii si 128 pixeli, avem 4ms pe axa temporala per gradatie
+				if (currentFreqMode == FREQ_50HZ) {
+					st7565_drawstring(buffer, 2, 7, "0", fontMode);
+
+					st7565_drawstring(buffer, 58, 7, "20", fontMode);
+
+					st7565_drawstring(buffer, 112, 7, "ms", fontMode);
+				}
+				uint8_t num_ticks = 10;
+				uint8_t x0 = 0;
+				uint8_t x1 = 127;
+				uint8_t y_bottom = 63;
+				for (uint8_t t = 0; t < num_ticks; t++) {
+					uint8_t x_tick = x0 + (x1 - x0) * t / (num_ticks - 1);
+					for (uint8_t dy = 0; dy < 3; dy++) {
+						st7565_setpixel(buffer, x_tick, y_bottom - dy, 1);
+					}
+				}
+
+			} else if (displayMode == 100) { //Display debug font
+				st7565_drawstring(buffer, 0, 0,
+						" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F",
+						fontMode);
+			}
 		}
 		state = DRAWING_POPUP;
 		break;
@@ -581,14 +768,15 @@ void readButtonFunction(void) {
 	 buttonReadRaw = 666;
 	 }
 	 HAL_ADC_Stop(&hadc);*/
-	if(active_buffer_id==0)
+	if (active_buffer_id == 0)
 		buttonReadRaw = adc_buffer1[254];
-	if(active_buffer_id==1)
-			buttonReadRaw = adc_buffer0[254];
+	if (active_buffer_id == 1)
+		buttonReadRaw = adc_buffer0[254];
 	buttonRead[0] = buttonRead[1];
 	buttonRead[1] = filterButton(interpolation(buttonReadRaw));
 
 	uint8_t rawButtonState = 0;
+	uint8_t buttonPress = 0;
 	if (buttonRead[1] <= 50) {
 		rawButtonState = 1;
 	} else if (buttonRead[1] > 290 && buttonRead[1] < 315) {
@@ -613,116 +801,208 @@ void readButtonFunction(void) {
 			buttonDebounceTimer = 0;
 
 			if (!buttonTransitionFlag) {
-				if (displayMode < 2) { // moduri voltmetru
-					if (buttonState == 1 && buttonStatePrev == 0) {
+				if (buttonState == 1 && buttonStatePrev == 0) {
+					buttonPress = 1;
+				} else if (buttonState == 2 && buttonStatePrev == 0) {
+					buttonPress = 2;
+				} else if (buttonState == 3 && buttonStatePrev == 0) {
+					buttonPress = 3;
+				} else if (buttonState == 4 && buttonStatePrev == 0) {
+					buttonPress = 4;
+				}
+				if (menu_active == 0) {
+
+					if (buttonPress == 1) {
 						if (displayMode == 0)
 							displayMode = displayModeMax;
 						else
 							displayMode--;
 						showDisplayModeOverlay = 1;
 						displayModeChangeTime = HAL_GetTick_us();
-					} else if (buttonState == 2 && buttonStatePrev == 0) {
+					} else if (buttonPress == 2) {
 						if (displayMode == displayModeMax)
 							displayMode = 0;
 						else
 							displayMode++;
 						showDisplayModeOverlay = 1;
 						displayModeChangeTime = HAL_GetTick_us();
+					} else if (buttonPress == 3) {
+						menu_select= 0;
+						menu_active = 1;
 					}
 
-					else if (buttonState == 3 && buttonStatePrev == 0) { //apas jos
-						if (fontMode == 0)
-							fontMode = fontModeMax;
-						else
-							fontMode--;
-					} else if (buttonState == 4 && buttonStatePrev == 0) { //apas sus
-						if (fontMode == fontModeMax)
-							fontMode = 0;
-						else
-							fontMode++;
-					}
+					/*else { //moduri osciloscop
+
+					 if (buttonPress==1) {
+					 if (oscilloscopeTrigger < 321)
+					 oscilloscopeTrigger += 10;
+					 oscilloscopeTriggerRaw += 100;
+					 oscilloscopeTrigger = interpolation(
+					 oscilloscopeTriggerRaw);
+					 }
+
+					 else if (buttonPress==2) {
+					 if (oscilloscopeTrigger > 9)
+					 oscilloscopeTrigger -= 10;
+					 oscilloscopeTriggerRaw -= 100;
+					 oscilloscopeTrigger = interpolation(
+					 oscilloscopeTriggerRaw);
+					 }
+
+					 else if (buttonPress==3) { //apas jos osciloscop
+					 if (currentFreqMode != FREQ_1HZ) {
+					 currentFreqMode--;
+					 update_tim3_frequency(currentFreqMode);
+					 }
+
+					 }
+
+					 else if (buttonPress==4) { //apas sus osciloscop
+					 if (currentFreqMode != FREQ_50KHZ) {
+					 currentFreqMode++;
+					 update_tim3_frequency(currentFreqMode);
+					 }
+
+					 }
+					 }*/
 				}
-
-				else { //moduri osciloscop
-
-					if (buttonState == 1 && buttonStatePrev == 0) {
-						/*if (oscilloscopeTrigger < 321)
-							oscilloscopeTrigger += 10;*/
-						oscilloscopeTriggerRaw+=100;
-						oscilloscopeTrigger=interpolation(oscilloscopeTriggerRaw);
-					}
-
-					else if (buttonState == 2 && buttonStatePrev == 0) {
-						/*if (oscilloscopeTrigger > 9)
-							oscilloscopeTrigger -= 10;*/
-						oscilloscopeTriggerRaw-=100;
-						oscilloscopeTrigger=interpolation(oscilloscopeTriggerRaw);
-					}
-
-					else if (buttonState == 3 && buttonStatePrev == 0) { //apas jos osciloscop
-						if (currentFreqMode == FREQ_40HZ) {
-							currentFreqMode = FREQ_60HZ;
-							update_tim3_frequency(currentFreqMode);
-						} else {
-							currentFreqMode--;
-							update_tim3_frequency(currentFreqMode);
+				//Meniu activ
+				else {
+					if (displayMode < 2) {
+						if (menu_select == 0) { //Font select
+							if (buttonPress == 3) {
+								menu_select=1;
+							} else if (buttonPress == 1) { //apas stanga
+								if (fontMode == 0)
+									fontMode = fontModeMax;
+								else
+									fontMode--;
+							} else if (buttonPress == 2) { //apas dreapta
+								if (fontMode == fontModeMax)
+									fontMode = 0;
+								else
+									fontMode++;
+							}
+						} else if (menu_select == 1) { //Exit menu
+							if (buttonPress == 4) {
+								menu_active = 0;
+							}
 						}
-
 					}
-
-					else if (buttonState == 4 && buttonStatePrev == 0) { //apas sus osciloscop
-						if (currentFreqMode == FREQ_60HZ) {
-							currentFreqMode = FREQ_40HZ;
-							update_tim3_frequency(currentFreqMode);
-						} else {
-							currentFreqMode++;
-							update_tim3_frequency(currentFreqMode);
+					if (displayMode == 2) {
+						if (menu_select == 0) { //Trigger activare/dezactivare
+							if (buttonPress == 3) { //apas jos
+								menu_select=1;
+							} else if (buttonPress == 1) { //apas stanga
+								trigger_active = !trigger_active;
+							} else if (buttonPress == 2) { //apas dreapta
+								trigger_active = !trigger_active;
+							} else if (buttonPress == 4) { //apas ok
+								trigger_active = !trigger_active;
+							}
 						}
+						else if (menu_select == 1) { //Trigger select volt
+							if (buttonPress == 3) { //apas jos
+								menu_select=2;
+							} else if (buttonPress == 1) { //apas stanga
+								oscilloscopeTriggerRaw -= 100;
+								oscilloscopeTrigger = interpolation(
+										oscilloscopeTriggerRaw);
+							} else if (buttonPress == 2) { //apas dreapta
+								oscilloscopeTriggerRaw += 100;
+								oscilloscopeTrigger = interpolation(
+										oscilloscopeTriggerRaw);
+							}
 
+						}
+						else if (menu_select == 2) { //Frecventa esantionare
+							if (buttonPress == 3) { //apas jos
+								menu_select=3;
+							} else if (buttonPress == 1) { //apas stanga
+								if (currentFreqMode != FREQ_1HZ) {
+									currentFreqMode--;
+									update_tim3_frequency(currentFreqMode);
+								}
+							} else if (buttonPress == 2) { //apas dreapta
+								if (currentFreqMode != FREQ_50KHZ) {
+									currentFreqMode++;
+									update_tim3_frequency(currentFreqMode);
+								}
+							}
+						}
+						else if (menu_select == 3) { //Exit menu
+							if (buttonPress == 4) {
+								menu_active = 0;
+							}
+
+						}
 					}
+
 				}
 			}
 		}
+	} else {
+		buttonTransitionFlag = 0;
+		buttonDebounceTimer = 0;
 	}
-	else {
-				buttonTransitionFlag = 0;
-				buttonDebounceTimer = 0;
-			}
-			/* USER CODE END readButtonFunction */
+	/* USER CODE END readButtonFunction */
 }
 
 void oscilloscopeTriggerFunction(void) {
-    const uint8_t SCOPE_SIZE = 128;
-    const uint8_t HYST_WINDOW = 4;
-    uint8_t trigger_found = 0;
-    uint16_t trigger_index = 3;
+	const uint8_t SCOPE_SIZE = 128;
+	const uint8_t HYST_WINDOW = 4;
+	uint16_t trigger_index = 3;
+	if (trigger_active) {
+		if (adc_buffer_ready) {
+			trigger_found = 0;
+			if (active_buffer_id == 0)
+				for (uint16_t i = 0; i < ADC_BUFFER_SIZE; i++) {
+					oscilloscopeBuffer[i] = adc_buffer1[i];
+				}
+			else
+				for (uint16_t i = 0; i < ADC_BUFFER_SIZE; i++) {
+					oscilloscopeBuffer[i] = adc_buffer0[i];
+				}
 
-    if(active_buffer_id==0)
-    for (uint16_t i = 0; i < 256; i++) {
-        oscilloscopeBuffer[i] = adc_buffer1[i];
-    }
-    else
-    	for (uint16_t i = 0; i < 256; i++) {
-    	        oscilloscopeBuffer[i] = adc_buffer0[i];
-    	    }
+			for (uint16_t i = 2 * HYST_WINDOW + 1; i < ADC_BUFFER_SIZE; i +=
+					2) {
+				uint16_t curr_val = oscilloscopeBuffer[i];
+				if (curr_val
+						> (oscilloscopeTriggerRaw + oscilloscopeTriggerHyst)) {
+					uint8_t below_count = 0;
+					for (uint8_t w = 1; w <= HYST_WINDOW; w++) {
+						if (oscilloscopeBuffer[i - 2 * w]
+								< (oscilloscopeTriggerRaw
+										- oscilloscopeTriggerHyst)) {
+							below_count++;
+						}
+					}
+					if (below_count >= HYST_WINDOW / 2) {
+						trigger_found = 1;
+						trigger_index = i;
+						oscilloscopeTriggerIndex = trigger_index;
+						break;
+					}
+				}
+			}
+			adc_buffer_ready = 0;
+		}
+	}
+	//daca nu e trigger
+	else {
+		if (adc_buffer_ready) {
+			if (active_buffer_id == 0)
+				for (uint16_t i = 0; i < ADC_BUFFER_SIZE; i++) {
+					oscilloscopeBuffer[i] = adc_buffer1[i];
+				}
+			else
+				for (uint16_t i = 0; i < ADC_BUFFER_SIZE; i++) {
+					oscilloscopeBuffer[i] = adc_buffer0[i];
+				}
+			adc_buffer_ready = 0;
+		}
+	}
 
-    for (uint16_t i = 2 * HYST_WINDOW + 1; i < 256; i += 2) {
-        uint16_t curr_val = oscilloscopeBuffer[i];
-        if (curr_val > (oscilloscopeTriggerRaw + oscilloscopeTriggerHyst)) {
-            uint8_t below_count = 0;
-            for (uint8_t w = 1; w <= HYST_WINDOW; w++) {
-                if (oscilloscopeBuffer[i - 2 * w] < (oscilloscopeTriggerRaw - oscilloscopeTriggerHyst)) {
-                    below_count++;
-                }
-            }
-            if (below_count >= HYST_WINDOW /2) {
-                trigger_found = 1;
-                trigger_index = i;
-                oscilloscopeTriggerIndex = trigger_index;
-                break;
-            }
-        }
-    }
 }
 /**
  * @brief  Period elapsed callback in non blocking mode

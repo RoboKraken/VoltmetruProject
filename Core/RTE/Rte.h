@@ -7,7 +7,7 @@
 
 #ifndef RTE_RTE_H_
 #define RTE_RTE_H_
-#define ADC_BUFFER_SIZE 256
+#define ADC_BUFFER_SIZE 512
 
 extern uint16_t voltReadRaw;
 extern uint16_t buttonReadRaw;
@@ -40,4 +40,10 @@ extern uint16_t testOscilloscope;
 extern uint16_t oscilloscopeTriggerRaw;
 extern uint16_t oscilloscopeTriggerHyst;
 extern uint16_t oscilloscopeTriggerIndex;
+extern uint8_t adc_buffer_ready;
+extern uint8_t trigger_found;
+extern uint8_t trigger_active;
+
+extern uint8_t menu_active;
+extern uint8_t menu_select;
 #endif /* RTE_RTE_H_ */

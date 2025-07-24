@@ -33,9 +33,19 @@ extern "C" {
 /* USER CODE END Includes */
 
 typedef enum {
-    FREQ_40HZ = 0,
+	FREQ_1HZ,
+	FREQ_10HZ,
+	FREQ_20HZ,
     FREQ_50HZ,
-    FREQ_60HZ,
+    FREQ_100HZ,
+	FREQ_200HZ,
+	FREQ_500HZ,
+	FREQ_1KHZ,
+	FREQ_2KHZ,
+	FREQ_5KHZ,
+	FREQ_10KHZ,
+	FREQ_20KHZ,
+	FREQ_50KHZ,
     FREQ_MODE_MAX
 } FrequencyMode;
 

@@ -36,4 +36,10 @@ uint16_t oscilloscopeTrigger=200;
 uint16_t testOscilloscope=0;
 uint16_t oscilloscopeTriggerRaw = 2048; 
 uint16_t oscilloscopeTriggerHyst = 10;
-uint16_t oscilloscopeTriggerIndex=0;
+uint16_t oscilloscopeTriggerIndex=1;
+uint8_t adc_buffer_ready=0;
+uint8_t trigger_found = 0;
+uint8_t trigger_active=1;
+
+uint8_t menu_active=0;
+uint8_t menu_select=0;

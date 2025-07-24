@@ -82,9 +82,9 @@ void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 14;
+  htim3.Init.Prescaler = 4;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 999;
+  htim3.Init.Period = 2999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -179,7 +179,18 @@ void update_tim3_frequency(FrequencyMode mode) {
 /* USER CODE END 1 */
 
 const uint32_t tim3_arr_values[FREQ_MODE_MAX] = {
-	1249, // 40Hz
-    999, // 50Hz
-	832   // 60Hz
+	149999,//1HZ
+	14999,//10hz
+	7499,//20hz
+    2999, // 50HZ
+	1499,//100hz
+	749,//200hz
+	299,//500hz
+	149,//1khz
+	74,//2khz
+	29,//5khz
+	14,//10khz
+	6,//20khz
+	1,//50khz
+
 };
